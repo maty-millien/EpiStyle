@@ -27,6 +27,11 @@ export function parseReportFile(reportPath: string, currentFilePath: string): Fi
             const [severity, code] = message.split(':');
             const relativeFilePath = filePath.startsWith('./') ? filePath.slice(2) : filePath;
 
+            // Exclude the tests/ directory from analysis
+            if (relativeFilePath.startsWith('tests/') || relativeFilePath.includes('/tests/')) {
+                return;
+            }
+
             const isIgnored = gitignorePatterns.some(pattern => {
                 if (!pattern || pattern.startsWith('#')) {return false;}
                 const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\//g, '\\/');

@@ -47,8 +47,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "deploy": "npm install && npm run compile && vsce package && code --install-extension *.vsix",
-    "publish": "npm install && npm run compile && vsce package && vsce publish"
+    "install": "npm install && npm run compile && vsce package && code --install-extension *.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.96.0",
