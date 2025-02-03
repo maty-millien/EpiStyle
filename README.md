@@ -1,4 +1,4 @@
-# Epitech Coding Style Checker
+# Epitech Coding Style Checker VS Code Extension
 
 A Visual Studio Code extension that enforces and validates Epitech coding style guidelines for your C projects.
 

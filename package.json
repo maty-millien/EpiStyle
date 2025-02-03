@@ -2,8 +2,9 @@
   "name": "epitech-vs-coding-style",
   "displayName": "Epitech VS Coding Style",
   "description": "Real-time coding style checker for Epitech students. Helps students maintain consistent code quality and follow Epitech standards.",
+  "icon": "resources/icon.png",
   "version": "0.0.1",
-  "publisher": "maty-mlln",
+  "publisher": "maty-millien",
   "license": "MIT",
   "author": {
     "name": "Maty MILLIEN",
@@ -37,21 +38,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [],
-    "configuration": {
-      "title": "Epitech Coding Style",
-      "properties": {
-        "epitechCodingStyle.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable Epitech coding style checking"
-        },
-        "epitechCodingStyle.autoFix": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically fix coding style issues on save"
-        }
-      }
-    }
+    "configuration": {}
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -60,7 +47,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "deploy": "npm install && npm run compile && vsce package && code --install-extension *.vsix"
+    "deploy": "npm install && npm run compile && vsce package && code --install-extension *.vsix",
+    "publish": "npm install && npm run compile && vsce package && vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.96.0",
