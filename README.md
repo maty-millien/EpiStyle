@@ -12,7 +12,7 @@ A Visual Studio Code extension that enforces and validates Epitech coding style 
 ## Requirements
 
 - [Docker](https://www.docker.com/) installed and running.
-- Visual Studio Code version 1.50.0 or later.
+- Visual Studio Code version 1.40.0 or later.
 
 ## Installation
 
