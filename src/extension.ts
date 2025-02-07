@@ -21,13 +21,20 @@ export function activate(context: vscode.ExtensionContext) {
             console.log('Analysis already running, skipping...');
             return;
         }
+
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri);
+        if (!workspaceFolder) {
+            console.log('No workspace folder found, skipping analysis...');
+            return;
+        }
+
         try {
             isAnalysisRunning = true;
             const reportPath = await executeDockerCheck(doc.fileName);
-            const fileErrorsMap = parseReportFile(reportPath, doc.fileName);
+            const fileErrorsMap = parseReportFile(reportPath, workspaceFolder.uri.fsPath);
             collection.clear();
             Object.entries(fileErrorsMap).forEach(([filePath, errors]) => {
-                const absolutePath = path.resolve(path.dirname(doc.fileName), filePath);
+                const absolutePath = path.resolve(workspaceFolder.uri.fsPath, filePath);
                 const fileUri = vscode.Uri.file(absolutePath);
                 const diagnostics = createDiagnostics(errors);
                 collection.set(fileUri, diagnostics);

@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { EXPORT_FILE } from './constants';
 
 /**
@@ -8,7 +9,12 @@ import { EXPORT_FILE } from './constants';
  * @returns A promise with the path to the generated report.
  */
 export async function executeDockerCheck(filePath: string): Promise<string> {
-    const deliveryDir = path.dirname(filePath);
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+    if (!workspaceFolder) {
+        throw new Error('No workspace folder found');
+    }
+
+    const deliveryDir = workspaceFolder.uri.fsPath;
     const reportsDir = deliveryDir;
     const reportPath = path.join(reportsDir, EXPORT_FILE);
 

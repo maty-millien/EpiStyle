@@ -5,14 +5,14 @@ import { FileErrors } from './constants';
 /**
  * Parses the coding style report file and organizes errors by file.
  * @param reportPath - The path to the report file.
- * @param currentFilePath - The path of the current file triggering the analysis.
+ * @param workspacePath - The path to the workspace root.
  * @returns An object mapping file paths to arrays of error codes.
  */
-export function parseReportFile(reportPath: string, currentFilePath: string): FileErrors {
+export function parseReportFile(reportPath: string, workspacePath: string): FileErrors {
     const fileErrors: FileErrors = {};
     if (!fs.existsSync(reportPath)) {return fileErrors;}
 
-    const gitignorePath = path.join(path.dirname(currentFilePath), '.gitignore');
+    const gitignorePath = path.join(workspacePath, '.gitignore');
     const gitignorePatterns = fs.existsSync(gitignorePath)
         ? fs.readFileSync(gitignorePath, 'utf-8').split('\n').map(line => line.trim())
         : [];
