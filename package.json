@@ -38,17 +38,22 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [],
-    "configuration": {}
+    "configuration": {
+      "title": "Epitech VS Coding Style",
+      "properties": {
+        "epitech-coding-style.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable the real-time coding style checker."
+        }
+      }
+    }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test",
-    "deploy": "npm install && npm run compile && vsce package",
-    "publish": "npm run deploy && vsce publish"
+    "compile": "npm install && tsc -p ./",
+    "deploy": "npm run compile && vsce package",
+    "clean": "rm -f *.vsix",
+    "publish": "npm run deploy && vsce publish && npm run clean"
   },
   "devDependencies": {
     "@types/vscode": "^1.40.0",

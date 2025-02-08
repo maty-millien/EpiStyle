@@ -6,7 +6,6 @@ import { createDiagnostics } from './diagnostics';
 import { executeDockerCheck } from './docker';
 import { parseReportFile } from './parser';
 
-// Analysis lock to prevent concurrent runs
 let isAnalysisRunning = false;
 
 /**
@@ -16,6 +15,12 @@ export function activate(context: vscode.ExtensionContext) {
     const collection = vscode.languages.createDiagnosticCollection('coding-style');
 
     const runAnalysis = async (doc: vscode.TextDocument) => {
+        const config = vscode.workspace.getConfiguration('epitech-coding-style');
+        if (!config.get('enable')) {
+            collection.clear();
+            return;
+        }
+
         if (BANNED_EXTENSIONS.includes(doc.languageId)) {return;}
         if (isAnalysisRunning) {
             console.log('Analysis already running, skipping...');
@@ -51,7 +56,17 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.workspace.onDidSaveTextDocument(runAnalysis),
-        vscode.workspace.onDidOpenTextDocument(runAnalysis)
+        vscode.workspace.onDidOpenTextDocument(runAnalysis),
+        vscode.workspace.onDidChangeConfiguration(event => {
+            if (event.affectsConfiguration('epitech-coding-style.enable')) {
+                const config = vscode.workspace.getConfiguration('epitech-coding-style');
+                if (!config.get('enable')) {
+                    collection.clear();
+                } else {
+                    vscode.workspace.textDocuments.forEach(runAnalysis);
+                }
+            }
+        })
     );
 }
 
