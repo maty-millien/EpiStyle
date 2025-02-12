@@ -1,9 +1,11 @@
-import * as os from "os";
 import * as path from "path";
 
 export const EXPORT_FILE = "coding-style-reports.log";
-export const TEMP_DIR = os.tmpdir();
-export const TEMP_REPORT_PATH = path.join(TEMP_DIR, EXPORT_FILE);
+export const LOG_DIR = ".vscode";
+export const getLogPath = (workspaceRoot: string): string => {
+  return path.join(workspaceRoot, LOG_DIR, EXPORT_FILE);
+};
+
 export const BANNED_EXTENSIONS = ["md"];
 
 export const ERROR_DESCRIPTIONS: { [key: string]: string } = {

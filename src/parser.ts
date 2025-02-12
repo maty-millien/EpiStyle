@@ -1,109 +1,100 @@
 import * as fs from "fs";
 import * as path from "path";
-import { FileErrors } from "./constants";
-import { debug } from "./debug";
+import { DebugLogger } from "./debug";
+import { ErrorSeverity, IFileErrors } from "./types";
 
-/**
- * Parses the coding style report file and organizes errors by file.
- * @param reportPath - The path to the report file.
- * @param workspacePath - The path to the workspace root.
- * @returns An object mapping file paths to arrays of error codes.
- */
-export function parseReportFile(
-  reportPath: string,
-  workspacePath: string
-): FileErrors {
-  debug.log("Parser", "Starting report parsing", { reportPath, workspacePath });
+export class ParserService {
+  public static parseReport(
+    reportPath: string,
+    workspacePath: string
+  ): IFileErrors {
+    DebugLogger.info("Parser", "Starting report parsing", {
+      reportPath,
+      workspacePath,
+    });
 
-  const fileErrors: FileErrors = {};
-  if (!fs.existsSync(reportPath)) {
-    debug.log("Parser", "Report file not found");
+    const fileErrors: IFileErrors = {};
+    if (!fs.existsSync(reportPath)) {
+      DebugLogger.warn("Parser", "Report file not found", { reportPath });
+      return fileErrors;
+    }
+
+    const gitignorePath = path.join(workspacePath, ".gitignore");
+    const gitignorePatterns = fs.existsSync(gitignorePath)
+      ? fs
+          .readFileSync(gitignorePath, "utf-8")
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line && !line.startsWith("#"))
+      : [];
+
+    const reportContent = fs.readFileSync(reportPath, "utf-8");
+    const lines = reportContent.split("\n").filter((line) => line.trim());
+
+    lines.forEach((line) => {
+      try {
+        const parts = line.split(":");
+        const [filePath, lineNumberStr, ...rest] = parts;
+        const message = rest.join(":").trim();
+        const [severity, code] = message.split(":");
+        const relativeFilePath = filePath.startsWith("./")
+          ? filePath.slice(2)
+          : filePath;
+
+        if (this.isTestFile(relativeFilePath)) {
+          DebugLogger.debug("Parser", "Skipping test file", {
+            filePath: relativeFilePath,
+          });
+          return;
+        }
+
+        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
+          DebugLogger.debug("Parser", "Skipping ignored file", {
+            filePath: relativeFilePath,
+          });
+          return;
+        }
+
+        if (!fileErrors[relativeFilePath]) {
+          fileErrors[relativeFilePath] = [];
+        }
+
+        fileErrors[relativeFilePath].push({
+          line: parseInt(lineNumberStr, 10) - 1,
+          severity: severity as ErrorSeverity,
+          code,
+          message,
+        });
+      } catch (error) {
+        DebugLogger.error("Parser", "Error parsing line", { error, line });
+      }
+    });
+
+    DebugLogger.info("Parser", "Finished parsing", {
+      totalFiles: Object.keys(fileErrors).length,
+      totalErrors: Object.values(fileErrors).reduce(
+        (sum, errors) => sum + errors.length,
+        0
+      ),
+    });
+
     return fileErrors;
   }
 
-  const gitignorePath = path.join(workspacePath, ".gitignore");
-  const gitignorePatterns = fs.existsSync(gitignorePath)
-    ? fs
-        .readFileSync(gitignorePath, "utf-8")
-        .split("\n")
-        .map((line) => line.trim())
-    : [];
+  private static isTestFile(filePath: string): boolean {
+    return filePath.startsWith("tests/") || filePath.includes("/tests/");
+  }
 
-  debug.log("Parser", "Loaded gitignore patterns", {
-    patterns: gitignorePatterns,
-  });
-
-  const reportContent = fs.readFileSync(reportPath, "utf-8");
-  const lines = reportContent.split("\n").filter((line) => line.trim());
-
-  debug.log("Parser", "Processing report lines", { lineCount: lines.length });
-
-  lines.forEach((line) => {
-    try {
-      const [filePath, lineNumberStr, ...rest] = line.split(":");
-      const message = rest.join(":").trim();
-      const [severity, code] = message.split(":");
-      const relativeFilePath = filePath.startsWith("./")
-        ? filePath.slice(2)
-        : filePath;
-
-      debug.log("Parser", "Processing line", {
-        filePath: relativeFilePath,
-        lineNumber: lineNumberStr,
-        severity,
-        code,
-      });
-
-      if (
-        relativeFilePath.startsWith("tests/") ||
-        relativeFilePath.includes("/tests/")
-      ) {
-        debug.log("Parser", "Skipping test file", {
-          filePath: relativeFilePath,
-        });
-        return;
-      }
-
-      const isIgnored = gitignorePatterns.some((pattern) => {
-        if (!pattern || pattern.startsWith("#")) {
-          return false;
-        }
-        const regexPattern = pattern
-          .replace(/\./g, "\\.")
-          .replace(/\*/g, ".*")
-          .replace(/\//g, "\\/");
-        return new RegExp(`^${regexPattern}$`).test(relativeFilePath);
-      });
-
-      if (isIgnored) {
-        debug.log("Parser", "Skipping ignored file", {
-          filePath: relativeFilePath,
-        });
-        return;
-      }
-
-      if (!fileErrors[relativeFilePath]) {
-        fileErrors[relativeFilePath] = [];
-      }
-      fileErrors[relativeFilePath].push({
-        line: parseInt(lineNumberStr, 10) - 1,
-        severity,
-        code,
-        message,
-      });
-    } catch (error) {
-      debug.log("Parser", "Error parsing line", { error, line });
-      console.error("Error parsing report line:", error);
-    }
-  });
-
-  debug.log("Parser", "Finished parsing", {
-    totalFiles: Object.keys(fileErrors).length,
-    totalErrors: Object.values(fileErrors).reduce(
-      (sum, errors) => sum + errors.length,
-      0
-    ),
-  });
-
-  return fileErrors;
+  private static isFileIgnored(
+    filePath: string,
+    gitignorePatterns: string[]
+  ): boolean {
+    return gitignorePatterns.some((pattern) => {
+      const regexPattern = pattern
+        .replace(/\./g, "\\.")
+        .replace(/\*/g, ".*")
+        .replace(/\//g, "\\/");
+      return new RegExp(`^${regexPattern}$`).test(filePath);
+    });
+  }
 }

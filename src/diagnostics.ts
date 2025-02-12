@@ -1,65 +1,75 @@
 import * as vscode from "vscode";
-import { ERROR_DESCRIPTIONS, ErrorCode } from "./constants";
-import { debug } from "./debug";
+import { ERROR_DESCRIPTIONS } from "./constants";
+import { DebugLogger } from "./debug";
+import { IErrorCode } from "./types";
 
-/**
- * Returns the VS Code diagnostic severity based on the error severity.
- * @param severity - Error severity string.
- */
-function getSeverityLevel(severity: string): vscode.DiagnosticSeverity {
-  debug.log("Diagnostics", "Converting severity level", { input: severity });
-  let result;
-  switch (severity) {
-    case "MAJOR":
-      result = vscode.DiagnosticSeverity.Error;
-      break;
-    case "MINOR":
-      result = vscode.DiagnosticSeverity.Warning;
-      break;
-    case "INFO":
-      result = vscode.DiagnosticSeverity.Information;
-      break;
-    default:
-      result = vscode.DiagnosticSeverity.Hint;
+export class DiagnosticsService {
+  private static readonly collection: vscode.DiagnosticCollection =
+    vscode.languages.createDiagnosticCollection("coding-style");
+
+  private static getSeverityLevel(severity: string): vscode.DiagnosticSeverity {
+    switch (severity) {
+      case "MAJOR":
+        return vscode.DiagnosticSeverity.Error;
+      case "MINOR":
+        return vscode.DiagnosticSeverity.Warning;
+      case "INFO":
+        return vscode.DiagnosticSeverity.Information;
+      default:
+        DebugLogger.warn("Diagnostics", "Unknown severity level", { severity });
+        return vscode.DiagnosticSeverity.Hint;
+    }
   }
-  debug.log("Diagnostics", "Converted severity", {
-    input: severity,
-    output: result,
-  });
-  return result;
-}
 
-/**
- * Creates diagnostics from an array of error codes.
- * @param errors - An array of errors.
- */
-export function createDiagnostics(errors: ErrorCode[]): vscode.Diagnostic[] {
-  debug.log("Diagnostics", "Creating diagnostics", {
-    errorCount: errors.length,
-  });
-
-  const diagnostics = errors.map((error) => {
-    const severity = getSeverityLevel(error.severity);
+  private static createDiagnostic(error: IErrorCode): vscode.Diagnostic {
+    const severity = this.getSeverityLevel(error.severity);
     const description =
       ERROR_DESCRIPTIONS[error.code] || "No description available";
     const range = new vscode.Range(error.line, 0, error.line, Number.MAX_VALUE);
 
-    debug.log("Diagnostics", "Creating diagnostic", {
+    DebugLogger.debug("Diagnostics", "Creating diagnostic", {
       code: error.code,
       line: error.line,
       severity,
       description,
     });
 
-    return new vscode.Diagnostic(
+    const diagnostic = new vscode.Diagnostic(
       range,
       `${error.code} - ${description}`,
       severity
     );
-  });
 
-  debug.log("Diagnostics", "Created diagnostics", {
-    count: diagnostics.length,
-  });
-  return diagnostics;
+    diagnostic.source = "epitech-coding-style";
+    diagnostic.code = error.code;
+
+    return diagnostic;
+  }
+
+  public static updateDiagnostics(uri: vscode.Uri, errors: IErrorCode[]): void {
+    DebugLogger.info("Diagnostics", "Updating diagnostics", {
+      file: uri.fsPath,
+      errorCount: errors.length,
+    });
+
+    const diagnostics = errors.map((error) => this.createDiagnostic(error));
+    this.collection.set(uri, diagnostics);
+  }
+
+  public static clearDiagnostics(): void {
+    DebugLogger.info("Diagnostics", "Clearing all diagnostics");
+    this.collection.clear();
+  }
+
+  public static clearFileDiagnostics(uri: vscode.Uri): void {
+    DebugLogger.info("Diagnostics", "Clearing file diagnostics", {
+      file: uri.fsPath,
+    });
+    this.collection.delete(uri);
+  }
+
+  public static dispose(): void {
+    DebugLogger.info("Diagnostics", "Disposing diagnostic collection");
+    this.collection.dispose();
+  }
 }
