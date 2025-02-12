@@ -54,6 +54,7 @@
     "deploy": "npm run compile && vsce package",
     "clean": "rm -f *.vsix",
     "test": "npm run compile && mocha out/test",
+    "watch": "tsc -watch -p ./",
     "publish": "npm run deploy && vsce publish && npm run clean"
   },
   "devDependencies": {

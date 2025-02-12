@@ -1,6 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { FileErrors } from './constants';
+import * as fs from "fs";
+import * as path from "path";
+import { FileErrors } from "./constants";
+import { debug } from "./debug";
 
 /**
  * Parses the coding style report file and organizes errors by file.
@@ -8,48 +9,101 @@ import { FileErrors } from './constants';
  * @param workspacePath - The path to the workspace root.
  * @returns An object mapping file paths to arrays of error codes.
  */
-export function parseReportFile(reportPath: string, workspacePath: string): FileErrors {
-    const fileErrors: FileErrors = {};
-    if (!fs.existsSync(reportPath)) {return fileErrors;}
+export function parseReportFile(
+  reportPath: string,
+  workspacePath: string
+): FileErrors {
+  debug.log("Parser", "Starting report parsing", { reportPath, workspacePath });
 
-    const gitignorePath = path.join(workspacePath, '.gitignore');
-    const gitignorePatterns = fs.existsSync(gitignorePath)
-        ? fs.readFileSync(gitignorePath, 'utf-8').split('\n').map(line => line.trim())
-        : [];
-
-    const reportContent = fs.readFileSync(reportPath, 'utf-8');
-    const lines = reportContent.split('\n').filter(line => line.trim());
-
-    lines.forEach(line => {
-        try {
-            const [filePath, lineNumberStr, ...rest] = line.split(':');
-            const message = rest.join(':').trim();
-            const [severity, code] = message.split(':');
-            const relativeFilePath = filePath.startsWith('./') ? filePath.slice(2) : filePath;
-
-            // Exclude the tests/ directory from analysis
-            if (relativeFilePath.startsWith('tests/') || relativeFilePath.includes('/tests/')) {
-                return;
-            }
-
-            const isIgnored = gitignorePatterns.some(pattern => {
-                if (!pattern || pattern.startsWith('#')) {return false;}
-                const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\//g, '\\/');
-                return new RegExp(`^${regexPattern}$`).test(relativeFilePath);
-            });
-            if (isIgnored) {return;}
-
-            if (!fileErrors[relativeFilePath]) {fileErrors[relativeFilePath] = [];}
-            fileErrors[relativeFilePath].push({
-                line: parseInt(lineNumberStr, 10) - 1,
-                severity,
-                code,
-                message
-            });
-        } catch (error) {
-            console.error('Error parsing report line:', error);
-        }
-    });
-
+  const fileErrors: FileErrors = {};
+  if (!fs.existsSync(reportPath)) {
+    debug.log("Parser", "Report file not found");
     return fileErrors;
+  }
+
+  const gitignorePath = path.join(workspacePath, ".gitignore");
+  const gitignorePatterns = fs.existsSync(gitignorePath)
+    ? fs
+        .readFileSync(gitignorePath, "utf-8")
+        .split("\n")
+        .map((line) => line.trim())
+    : [];
+
+  debug.log("Parser", "Loaded gitignore patterns", {
+    patterns: gitignorePatterns,
+  });
+
+  const reportContent = fs.readFileSync(reportPath, "utf-8");
+  const lines = reportContent.split("\n").filter((line) => line.trim());
+
+  debug.log("Parser", "Processing report lines", { lineCount: lines.length });
+
+  lines.forEach((line) => {
+    try {
+      const [filePath, lineNumberStr, ...rest] = line.split(":");
+      const message = rest.join(":").trim();
+      const [severity, code] = message.split(":");
+      const relativeFilePath = filePath.startsWith("./")
+        ? filePath.slice(2)
+        : filePath;
+
+      debug.log("Parser", "Processing line", {
+        filePath: relativeFilePath,
+        lineNumber: lineNumberStr,
+        severity,
+        code,
+      });
+
+      if (
+        relativeFilePath.startsWith("tests/") ||
+        relativeFilePath.includes("/tests/")
+      ) {
+        debug.log("Parser", "Skipping test file", {
+          filePath: relativeFilePath,
+        });
+        return;
+      }
+
+      const isIgnored = gitignorePatterns.some((pattern) => {
+        if (!pattern || pattern.startsWith("#")) {
+          return false;
+        }
+        const regexPattern = pattern
+          .replace(/\./g, "\\.")
+          .replace(/\*/g, ".*")
+          .replace(/\//g, "\\/");
+        return new RegExp(`^${regexPattern}$`).test(relativeFilePath);
+      });
+
+      if (isIgnored) {
+        debug.log("Parser", "Skipping ignored file", {
+          filePath: relativeFilePath,
+        });
+        return;
+      }
+
+      if (!fileErrors[relativeFilePath]) {
+        fileErrors[relativeFilePath] = [];
+      }
+      fileErrors[relativeFilePath].push({
+        line: parseInt(lineNumberStr, 10) - 1,
+        severity,
+        code,
+        message,
+      });
+    } catch (error) {
+      debug.log("Parser", "Error parsing line", { error, line });
+      console.error("Error parsing report line:", error);
+    }
+  });
+
+  debug.log("Parser", "Finished parsing", {
+    totalFiles: Object.keys(fileErrors).length,
+    totalErrors: Object.values(fileErrors).reduce(
+      (sum, errors) => sum + errors.length,
+      0
+    ),
+  });
+
+  return fileErrors;
 }
