@@ -4,18 +4,18 @@ export interface IDebugDetails {
   [key: string]: unknown;
 }
 
-export class DebugLogger {
+export class Debugger {
   private static channel: vscode.OutputChannel;
-  private static readonly logLevels = [
-    "DEBUG",
-    "INFO",
-    "WARN",
-    "ERROR",
-  ] as const;
+  private static readonly logLevels = ["INFO", "WARN", "ERROR"] as const;
 
   public static initialize(): void {
     if (!this.channel) {
-      this.channel = vscode.window.createOutputChannel("Epitech Coding Style");
+      this.channel = vscode.window.createOutputChannel(
+        "Epitech VS Coding Style",
+        {
+          log: true,
+        }
+      );
     }
   }
 
@@ -28,20 +28,24 @@ export class DebugLogger {
     if (!this.channel) {
       this.initialize();
     }
-    const timestamp = new Date().toISOString();
-    const message = `[${timestamp}] [${level}] [${component}] ${action}`;
-    this.channel.appendLine(message);
+
+    const message = `[${component}] ${action}`;
+
+    switch (level) {
+      case "ERROR":
+        (this.channel as vscode.LogOutputChannel).error(message);
+        break;
+      case "WARN":
+        (this.channel as vscode.LogOutputChannel).warn(message);
+        break;
+      case "INFO":
+        (this.channel as vscode.LogOutputChannel).info(message);
+        break;
+    }
+
     if (details) {
       this.channel.appendLine(JSON.stringify(details, null, 2));
     }
-  }
-
-  public static debug(
-    component: string,
-    action: string,
-    details?: IDebugDetails
-  ): void {
-    this.log("DEBUG", component, action, details);
   }
 
   public static info(

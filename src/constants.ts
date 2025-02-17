@@ -1,7 +1,10 @@
 import * as path from "path";
 
 export const EXPORT_FILE = "coding-style-reports.log";
+export const REPORT_MOUNT_DIR = "/mnt/reports";
+export const DELIVERY_MOUNT_DIR = "/mnt/delivery";
 export const LOG_DIR = ".vscode";
+
 export const getLogPath = (workspaceRoot: string): string => {
   return path.join(workspaceRoot, LOG_DIR, EXPORT_FILE);
 };

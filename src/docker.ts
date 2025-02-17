@@ -4,12 +4,14 @@ import * as path from "path";
 import * as vscode from "vscode";
 import {
   CACHE_DURATION_MS,
+  DELIVERY_MOUNT_DIR,
   DOCKER_CACHE_KEY,
   DOCKER_IMAGE,
   LOG_DIR,
+  REPORT_MOUNT_DIR,
   getLogPath,
 } from "./constants";
-import { DebugLogger } from "./debug";
+import { Debugger } from "./debug";
 
 class DockerError extends Error {
   public constructor(message: string, public readonly exitCode?: number) {
@@ -18,19 +20,19 @@ class DockerError extends Error {
   }
 }
 
-export class DockerService {
+export class Docker {
   private static async delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private static async pruneDockerImages(): Promise<void> {
     return new Promise<void>((resolve) => {
-      DebugLogger.info("Docker", "Pruning unused images");
+      Debugger.info("Docker", "Pruning unused images");
       exec("docker image prune -f", (error, stdout, stderr) => {
         if (error) {
-          DebugLogger.warn("Docker", "Prune failed", { error: stderr });
+          Debugger.warn("Docker", "Prune failed", { error: stderr });
         } else {
-          DebugLogger.debug("Docker", "Prune successful", { stdout });
+          Debugger.info("Docker", "Prune successful", { stdout });
         }
         resolve();
       });
@@ -44,26 +46,26 @@ export class DockerService {
     const now = Date.now();
 
     if (now - lastPull < CACHE_DURATION_MS) {
-      DebugLogger.debug("Docker", "Using cached image");
+      Debugger.info("Docker", "Using cached image");
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
-      DebugLogger.info("Docker", "Pulling new image");
+      Debugger.info("Docker", "Pulling new image");
       const pullProcess = spawn("docker", ["pull", DOCKER_IMAGE], {
         shell: true,
       });
       let errorOutput = "";
 
       pullProcess.stdout.on("data", (data) => {
-        DebugLogger.debug("Docker", "Pull progress", {
+        Debugger.info("Docker", "Pull progress", {
           output: data.toString().trim(),
         });
       });
 
       pullProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
-        DebugLogger.debug("Docker", "Pull stderr", {
+        Debugger.info("Docker", "Pull stderr", {
           output: data.toString().trim(),
         });
       });
@@ -90,33 +92,35 @@ export class DockerService {
   }
 
   public static async executeCheck(
-    filePath: string,
-    context: vscode.ExtensionContext
+    context: vscode.ExtensionContext,
+    workspaceFolder?: vscode.WorkspaceFolder
   ): Promise<string> {
-    DebugLogger.info("Docker", "Starting check", { filePath });
+    Debugger.info("Docker", "Starting workspace check", {
+      workspaceFolder: workspaceFolder?.uri.fsPath,
+    });
 
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(
-      vscode.Uri.file(filePath)
-    );
-    if (!workspaceFolder) {
-      DebugLogger.debug("Docker", "No workspace folder found");
+    const activeWorkspaceFolder =
+      workspaceFolder ||
+      (vscode.workspace.workspaceFolders &&
+        vscode.workspace.workspaceFolders[0]);
+    if (!activeWorkspaceFolder) {
+      Debugger.info("Docker", "No workspace folder found");
       throw new Error("No workspace folder found");
     }
 
-    const workspacePath = workspaceFolder.uri.fsPath;
+    const workspacePath = activeWorkspaceFolder.uri.fsPath;
     const logDirPath = path.join(workspacePath, LOG_DIR);
     const reportPath = getLogPath(workspacePath);
 
-    // Ensure .vscode directory exists
     if (!fs.existsSync(logDirPath)) {
-      DebugLogger.debug("Docker", "Creating .vscode directory");
+      Debugger.info("Docker", "Creating .vscode directory");
       fs.mkdirSync(logDirPath, { recursive: true });
     }
 
     try {
       await this.pullDockerImage(context);
     } catch (error) {
-      DebugLogger.warn("Docker", "Using cached image after pull failure", {
+      Debugger.warn("Docker", "Using cached image after pull failure", {
         error,
       });
     }
@@ -127,27 +131,27 @@ export class DockerService {
         "--rm",
         "-i",
         "-v",
-        `${workspacePath}:/mnt/delivery`,
+        `${workspacePath}:${DELIVERY_MOUNT_DIR}`,
         "-v",
-        `${path.dirname(reportPath)}:/mnt/reports`,
+        `${path.dirname(reportPath)}:${REPORT_MOUNT_DIR}`,
         DOCKER_IMAGE,
-        "/mnt/delivery",
-        "/mnt/reports",
+        DELIVERY_MOUNT_DIR,
+        REPORT_MOUNT_DIR,
       ];
 
-      DebugLogger.debug("Docker", "Running container", { args });
+      Debugger.info("Docker", "Running container", { args });
       const containerProcess = spawn("docker", args, { shell: true });
       let errorOutput = "";
 
       containerProcess.stdout.on("data", (data) => {
-        DebugLogger.debug("Docker", "Container stdout", {
+        Debugger.info("Docker", "Container stdout", {
           output: data.toString().trim(),
         });
       });
 
       containerProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
-        DebugLogger.debug("Docker", "Container stderr", {
+        Debugger.info("Docker", "Container stderr", {
           output: data.toString().trim(),
         });
       });

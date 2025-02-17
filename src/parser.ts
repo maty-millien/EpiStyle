@@ -1,21 +1,21 @@
 import * as fs from "fs";
 import * as path from "path";
-import { DebugLogger } from "./debug";
+import { Debugger } from "./debug";
 import { ErrorSeverity, IFileErrors } from "./types";
 
-export class ParserService {
+export class Parser {
   public static parseReport(
     reportPath: string,
     workspacePath: string
   ): IFileErrors {
-    DebugLogger.info("Parser", "Starting report parsing", {
+    Debugger.info("Parser", "Starting report parsing", {
       reportPath,
       workspacePath,
     });
 
     const fileErrors: IFileErrors = {};
     if (!fs.existsSync(reportPath)) {
-      DebugLogger.warn("Parser", "Report file not found", { reportPath });
+      Debugger.warn("Parser", "Report file not found", { reportPath });
       return fileErrors;
     }
 
@@ -42,14 +42,14 @@ export class ParserService {
           : filePath;
 
         if (this.isTestFile(relativeFilePath)) {
-          DebugLogger.debug("Parser", "Skipping test file", {
+          Debugger.info("Parser", "Skipping test file", {
             filePath: relativeFilePath,
           });
           return;
         }
 
         if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
-          DebugLogger.debug("Parser", "Skipping ignored file", {
+          Debugger.info("Parser", "Skipping ignored file", {
             filePath: relativeFilePath,
           });
           return;
@@ -66,11 +66,11 @@ export class ParserService {
           message,
         });
       } catch (error) {
-        DebugLogger.error("Parser", "Error parsing line", { error, line });
+        Debugger.error("Parser", "Error parsing line", { error, line });
       }
     });
 
-    DebugLogger.info("Parser", "Finished parsing", {
+    Debugger.info("Parser", "Finished parsing", {
       totalFiles: Object.keys(fileErrors).length,
       totalErrors: Object.values(fileErrors).reduce(
         (sum, errors) => sum + errors.length,

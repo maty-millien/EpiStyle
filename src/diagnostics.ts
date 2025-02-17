@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { ERROR_DESCRIPTIONS } from "./constants";
-import { DebugLogger } from "./debug";
+import { Debugger } from "./debug";
 import { IErrorCode } from "./types";
 
-export class DiagnosticsService {
+export class Diagnostics {
   private static readonly collection: vscode.DiagnosticCollection =
     vscode.languages.createDiagnosticCollection("coding-style");
 
@@ -16,7 +16,7 @@ export class DiagnosticsService {
       case "INFO":
         return vscode.DiagnosticSeverity.Information;
       default:
-        DebugLogger.warn("Diagnostics", "Unknown severity level", { severity });
+        Debugger.warn("Diagnostics", "Unknown severity level", { severity });
         return vscode.DiagnosticSeverity.Hint;
     }
   }
@@ -27,7 +27,7 @@ export class DiagnosticsService {
       ERROR_DESCRIPTIONS[error.code] || "No description available";
     const range = new vscode.Range(error.line, 0, error.line, Number.MAX_VALUE);
 
-    DebugLogger.debug("Diagnostics", "Creating diagnostic", {
+    Debugger.info("Diagnostics", "Creating diagnostic", {
       code: error.code,
       line: error.line,
       severity,
@@ -47,7 +47,7 @@ export class DiagnosticsService {
   }
 
   public static updateDiagnostics(uri: vscode.Uri, errors: IErrorCode[]): void {
-    DebugLogger.info("Diagnostics", "Updating diagnostics", {
+    Debugger.info("Diagnostics", "Updating diagnostics", {
       file: uri.fsPath,
       errorCount: errors.length,
     });
@@ -57,19 +57,12 @@ export class DiagnosticsService {
   }
 
   public static clearDiagnostics(): void {
-    DebugLogger.info("Diagnostics", "Clearing all diagnostics");
+    Debugger.info("Diagnostics", "Clearing all diagnostics");
     this.collection.clear();
   }
 
-  public static clearFileDiagnostics(uri: vscode.Uri): void {
-    DebugLogger.info("Diagnostics", "Clearing file diagnostics", {
-      file: uri.fsPath,
-    });
-    this.collection.delete(uri);
-  }
-
   public static dispose(): void {
-    DebugLogger.info("Diagnostics", "Disposing diagnostic collection");
+    Debugger.info("Diagnostics", "Disposing diagnostic collection");
     this.collection.dispose();
   }
 }
