@@ -3,7 +3,7 @@
   "displayName": "Epitech VS Coding Style",
   "description": "Real-time coding style checker for Epitech students. Helps students maintain consistent code quality and follow Epitech standards.",
   "icon": "resources/icon.png",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "maty-millien",
   "license": "MIT",
   "author": {

@@ -126,21 +126,30 @@ export class Docker {
     }
 
     return new Promise<string>((resolve, reject) => {
+      // Properly escape paths for Docker mount arguments
+      const escapedWorkspacePath = `"${workspacePath.replace(/"/g, '\\"')}"`;
+      const escapedReportPath = `"${path
+        .dirname(reportPath)
+        .replace(/"/g, '\\"')}"`;
+
       const args = [
         "run",
         "--rm",
         "-i",
         "-v",
-        `${workspacePath}:${DELIVERY_MOUNT_DIR}`,
+        `${escapedWorkspacePath}:${DELIVERY_MOUNT_DIR}`,
         "-v",
-        `${path.dirname(reportPath)}:${REPORT_MOUNT_DIR}`,
+        `${escapedReportPath}:${REPORT_MOUNT_DIR}`,
         DOCKER_IMAGE,
         DELIVERY_MOUNT_DIR,
         REPORT_MOUNT_DIR,
       ];
 
       Debugger.info("Docker", "Running container", { args });
-      const containerProcess = spawn("docker", args, { shell: true });
+      const containerProcess = spawn("docker", args, {
+        shell: true,
+        windowsHide: true,
+      });
       let errorOutput = "";
 
       containerProcess.stdout.on("data", (data) => {
