@@ -10,6 +10,8 @@ import { Debugger } from "../utils/debugger";
 export class AnalyzerService {
   private static instance: AnalyzerService;
   private isAnalysisRunning: boolean = false;
+  private debounceTimer: NodeJS.Timeout | undefined;
+  private static readonly DEBOUNCE_DELAY = 500; // ms
 
   private constructor() {}
 
@@ -34,13 +36,27 @@ export class AnalyzerService {
     return true;
   }
 
+  private clearDebounceTimer() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = undefined;
+    }
+  }
+
   public async analyze(
     doc: vscode.TextDocument,
     context: vscode.ExtensionContext
   ): Promise<number> {
     if (this.isAnalysisRunning) {
-      Debugger.info("AnalyzerService", "Analysis already running, skipping");
-      return -1;
+      Debugger.info("AnalyzerService", "Analysis already running, debouncing");
+      this.clearDebounceTimer();
+
+      return new Promise((resolve) => {
+        this.debounceTimer = setTimeout(async () => {
+          const result = await this.analyze(doc, context);
+          resolve(result);
+        }, AnalyzerService.DEBOUNCE_DELAY);
+      });
     }
 
     if (!this.isDocumentValid(doc)) {
@@ -87,6 +103,7 @@ export class AnalyzerService {
       return 0;
     } finally {
       this.isAnalysisRunning = false;
+      this.clearDebounceTimer();
     }
   }
 }

@@ -25,6 +25,11 @@ export class CodingStyleStatusBar {
   }
 
   private startLoadingAnimation() {
+    if (this.loadingInterval) {
+      // Don't start a new animation if one is already running
+      return;
+    }
+
     const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     let i = 0;
     this.statusBarItem.text = `$(loading~spin)  Analyzing...`;
@@ -66,6 +71,7 @@ export class CodingStyleStatusBar {
   }
 
   public startAnalysis() {
+    this.stopLoadingAnimation(); // First stop any existing animation
     this.startLoadingAnimation();
   }
 
