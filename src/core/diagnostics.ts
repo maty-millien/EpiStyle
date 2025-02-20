@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { ERROR_DESCRIPTIONS } from "./constants";
-import { Debugger } from "./debug";
-import { IErrorCode } from "./types";
+import { ERROR_DESCRIPTIONS } from "../config/constants";
+import { IErrorCode } from "../config/types";
+import { Debugger } from "../utils/debugger";
 
 export class Diagnostics {
   private static readonly collection: vscode.DiagnosticCollection =

@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
-
-export interface IDebugDetails {
-  [key: string]: unknown;
-}
+import { IDebugDetails } from "../config/types";
 
 export class Debugger {
   private static channel: vscode.OutputChannel;

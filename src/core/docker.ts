@@ -10,8 +10,8 @@ import {
   LOG_DIR,
   REPORT_MOUNT_DIR,
   getLogPath,
-} from "./constants";
-import { Debugger } from "./debug";
+} from "../config/constants";
+import { Debugger } from "../utils/debugger";
 
 class DockerError extends Error {
   public constructor(message: string, public readonly exitCode?: number) {

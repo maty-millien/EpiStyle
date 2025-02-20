@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Debugger } from "./debug";
-import { ErrorSeverity, IFileErrors } from "./types";
+import { ErrorSeverity, IFileErrors } from "../config/types";
+import { Debugger } from "../utils/debugger";
 
 export class Parser {
   public static parseReport(
