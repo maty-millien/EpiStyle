@@ -13,6 +13,7 @@ export class Extension {
   private static readonly configSection = "epitech-coding-style";
   private static statusBarItem: vscode.StatusBarItem;
   private static loadingInterval: NodeJS.Timeout | undefined;
+  private static extensionContext: vscode.ExtensionContext;
 
   private constructor() {}
 
@@ -22,18 +23,19 @@ export class Extension {
       100
     );
     this.statusBarItem.name = "Epitech Coding Style";
+    this.statusBarItem.command = "epitech-coding-style.toggleMenu";
     this.updateStatusBar(0);
     this.statusBarItem.show();
   }
 
   private static startLoadingAnimation() {
-    const frames = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
+    const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     let i = 0;
-    this.statusBarItem.text = `$(sync~spin) Analyzing...`;
+    this.statusBarItem.text = `$(loading~spin) Analyzing...`;
     this.loadingInterval = setInterval(() => {
       this.statusBarItem.text = `${frames[i]} Analyzing...`;
       i = (i + 1) % frames.length;
-    }, 100);
+    }, 80); // Faster animation for smoother look
   }
 
   private static stopLoadingAnimation() {
@@ -45,11 +47,20 @@ export class Extension {
 
   private static updateStatusBar(errorCount: number) {
     this.stopLoadingAnimation();
+    const config = vscode.workspace.getConfiguration(this.configSection);
+    const isEnabled = config.get<boolean>("enable") ?? true;
+
+    if (!isEnabled) {
+      this.statusBarItem.text = `$(debug-disconnect) Disabled`;
+      this.statusBarItem.backgroundColor = undefined;
+      return;
+    }
+
     if (errorCount === 0) {
-      this.statusBarItem.text = `$(check) No coding style errors`;
+      this.statusBarItem.text = `$(check) No Coding Style Errors`;
       this.statusBarItem.backgroundColor = undefined;
     } else {
-      this.statusBarItem.text = `$(alert) ${errorCount} coding style error${
+      this.statusBarItem.text = `$(alert) ${errorCount} Coding Style Error${
         errorCount > 1 ? "s" : ""
       }`;
       this.statusBarItem.backgroundColor = new vscode.ThemeColor(
@@ -76,6 +87,15 @@ export class Extension {
     doc: vscode.TextDocument,
     context: vscode.ExtensionContext
   ): Promise<void> {
+    const config = vscode.workspace.getConfiguration(this.configSection);
+    if (!config.get("enable")) {
+      Debugger.info("Extension", "Extension disabled, clearing diagnostics");
+      this.stopLoadingAnimation();
+      this.updateStatusBar(0);
+      Diagnostics.clearDiagnostics();
+      return;
+    }
+
     // If an analysis is already running, skip this run
     if (this.isAnalysisRunning) {
       Debugger.info(
@@ -84,6 +104,7 @@ export class Extension {
       );
       return;
     }
+
     this.isAnalysisRunning = true;
     this.startLoadingAnimation();
 
@@ -152,12 +173,53 @@ export class Extension {
     }
   }
 
+  private static async showMenu() {
+    const config = vscode.workspace.getConfiguration(this.configSection);
+    const isEnabled = config.get<boolean>("enable") ?? true;
+
+    const items = [
+      {
+        label: `${isEnabled ? "$(check) " : ""}Enable Coding Style Check`,
+        description: isEnabled ? "Currently enabled" : "Currently disabled",
+      },
+      {
+        label: `${!isEnabled ? "$(check) " : ""}Disable Coding Style Check`,
+        description: !isEnabled ? "Currently disabled" : "Currently enabled",
+      },
+    ];
+
+    const selected = await vscode.window.showQuickPick(items, {
+      title: "Epitech Coding Style Options",
+    });
+
+    if (selected) {
+      const newValue = selected.label.includes("Enable");
+      await config.update("enable", newValue, true);
+
+      if (newValue) {
+        // Re-run analysis on all open documents
+        vscode.workspace.textDocuments.forEach(
+          (doc) => void this.analyzeWorkspace(doc, this.extensionContext)
+        );
+      } else {
+        // Cleanup when disabled
+        this.stopLoadingAnimation();
+        this.updateStatusBar(0);
+        Diagnostics.clearDiagnostics();
+      }
+    }
+  }
+
   public static activate(context: vscode.ExtensionContext): void {
     Debugger.info("Extension", "Activating extension");
+    this.extensionContext = context;
     this.initializeStatusBar();
 
     context.subscriptions.push(
       this.statusBarItem,
+      vscode.commands.registerCommand("epitech-coding-style.toggleMenu", () => {
+        void this.showMenu();
+      }),
       vscode.workspace.onDidSaveTextDocument(
         (doc) => void this.analyzeWorkspace(doc, context)
       ),
@@ -165,6 +227,8 @@ export class Extension {
         if (event.affectsConfiguration(`${this.configSection}.enable`)) {
           const config = vscode.workspace.getConfiguration(this.configSection);
           if (!config.get("enable")) {
+            this.stopLoadingAnimation();
+            this.updateStatusBar(0);
             Diagnostics.clearDiagnostics();
           } else {
             vscode.workspace.textDocuments.forEach(
