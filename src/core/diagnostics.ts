@@ -10,7 +10,7 @@ export class Diagnostics {
   private static getSeverityLevel(severity: string): vscode.DiagnosticSeverity {
     switch (severity) {
       case "MAJOR":
-        return vscode.DiagnosticSeverity.Error;
+        return vscode.DiagnosticSeverity.Warning;
       case "MINOR":
         return vscode.DiagnosticSeverity.Warning;
       case "INFO":

@@ -3,7 +3,7 @@
   "displayName": "Epitech VS Coding Style",
   "description": "Real-time coding style checker for Epitech students. Helps students maintain consistent code quality and follow Epitech standards.",
   "icon": "resources/icon.png",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "maty-millien",
   "license": "MIT",
   "author": {
@@ -53,7 +53,7 @@
     "compile": "npm install && tsc -p ./",
     "deploy": "npm run compile && vsce package",
     "clean": "rm -f *.vsix && rm -rf out",
-    "test": "npm run clean && npm run compile && code-insiders --extensionDevelopmentPath=$PWD",
+    "test": "npm run clean && npm run compile && cursor --extensionDevelopmentPath=$PWD",
     "watch": "tsc -watch -p ./",
     "publish": "npm run deploy && vsce publish && npm run clean"
   },
