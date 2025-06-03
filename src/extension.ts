@@ -66,12 +66,10 @@ export class Extension {
     Debugger.info("Extension", "Activating extension");
     this.extensionContext = context;
 
-    // Initialize services
     this.configManager = ConfigurationManager.getInstance();
     this.statusBar = CodingStyleStatusBar.getInstance();
     this.analyzerService = AnalyzerService.getInstance();
 
-    // Register commands and handlers
     this.statusBar.registerCommand(context, () => this.showMenu());
 
     context.subscriptions.push(
