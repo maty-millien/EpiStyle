@@ -126,7 +126,6 @@ export class Docker {
     }
 
     return new Promise<string>((resolve, reject) => {
-      // Properly escape paths for Docker mount arguments
       const escapedWorkspacePath = `"${workspacePath.replace(/"/g, '\\"')}"`;
       const escapedReportPath = `"${path
         .dirname(reportPath)

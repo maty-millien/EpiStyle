@@ -26,7 +26,6 @@ export class CodingStyleStatusBar {
 
   private startLoadingAnimation() {
     if (this.loadingInterval) {
-      // Don't start a new animation if one is already running
       return;
     }
 
@@ -71,7 +70,7 @@ export class CodingStyleStatusBar {
   }
 
   public startAnalysis() {
-    this.stopLoadingAnimation(); // First stop any existing animation
+    this.stopLoadingAnimation();
     this.startLoadingAnimation();
   }
 

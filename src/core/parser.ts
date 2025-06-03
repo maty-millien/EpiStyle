@@ -90,24 +90,18 @@ export class Parser {
     gitignorePatterns: string[]
   ): boolean {
     return gitignorePatterns.some((pattern) => {
-      // Remove trailing slash for directory patterns
       const cleanPattern = pattern.endsWith("/")
         ? pattern.slice(0, -1)
         : pattern;
 
-      // Create a regex pattern that matches both files and directories
       const regexPattern = cleanPattern
         .replace(/\./g, "\\.")
         .replace(/\*/g, ".*")
         .replace(/\//g, "\\/");
 
-      // If original pattern ends with /, it's a directory pattern
-      // Match any file that starts with this directory pattern
-      if (pattern.endsWith("/")) {
+      if (pattern.endsWith("/"))
         return new RegExp(`^${regexPattern}(?:/.*)?$`).test(filePath);
-      }
 
-      // For regular patterns, match exactly
       return new RegExp(`^${regexPattern}$`).test(filePath);
     });
   }

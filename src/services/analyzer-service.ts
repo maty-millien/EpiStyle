@@ -16,23 +16,19 @@ export class AnalyzerService {
   private constructor() {}
 
   public static getInstance(): AnalyzerService {
-    if (!AnalyzerService.instance) {
+    if (!AnalyzerService.instance)
       AnalyzerService.instance = new AnalyzerService();
-    }
     return AnalyzerService.instance;
   }
 
   private isDocumentValid(doc: vscode.TextDocument): boolean {
-    if (BANNED_EXTENSIONS.includes(doc.languageId)) {
-      return false;
-    }
+    if (BANNED_EXTENSIONS.includes(doc.languageId)) return false;
 
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri);
     if (!workspaceFolder) {
       Debugger.info("AnalyzerService", "No workspace folder found");
       return false;
     }
-
     return true;
   }
 
@@ -59,9 +55,7 @@ export class AnalyzerService {
       });
     }
 
-    if (!this.isDocumentValid(doc)) {
-      return 0;
-    }
+    if (!this.isDocumentValid(doc)) return 0;
 
     this.isAnalysisRunning = true;
     try {
