@@ -1,5 +1,8 @@
 import * as path from "path";
 
+export const CONFIG_SECTION = "epitech-coding-style";
+export const TOGGLE_COMMAND = `${CONFIG_SECTION}.toggleMenu`;
+
 export const EXPORT_FILE = "coding-style-reports.log";
 export const REPORT_MOUNT_DIR = "/mnt/reports";
 export const DELIVERY_MOUNT_DIR = "/mnt/delivery";

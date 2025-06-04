@@ -1,6 +1,7 @@
-import { exec, spawn } from "child_process";
+import { exec as execCallback, spawn } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import { promisify } from "util";
 import * as vscode from "vscode";
 import {
   CACHE_DURATION_MS,
@@ -12,6 +13,8 @@ import {
   getLogPath,
 } from "../config/constants";
 import { Debugger } from "../utils/debugger";
+
+const exec = promisify(execCallback);
 
 class DockerError extends Error {
   public constructor(message: string, public readonly exitCode?: number) {
@@ -26,17 +29,19 @@ export class Docker {
   }
 
   private static async pruneDockerImages(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      Debugger.info("Docker", "Pruning unused images");
-      exec("docker image prune -f", (error, stdout, stderr) => {
-        if (error) {
-          Debugger.warn("Docker", "Prune failed", { error: stderr });
-        } else {
-          Debugger.info("Docker", "Prune successful", { stdout });
-        }
-        resolve();
+    Debugger.info("Docker", "Pruning unused images");
+    try {
+      const { stdout, stderr } = await exec("docker image prune -f");
+      if (stderr) {
+        Debugger.warn("Docker", "Prune warnings", { stderr });
+      } else {
+        Debugger.info("Docker", "Prune successful", { stdout });
+      }
+    } catch (error: any) {
+      Debugger.warn("Docker", "Prune failed", {
+        error: error.message || error,
       });
-    });
+    }
   }
 
   private static async pullDockerImage(

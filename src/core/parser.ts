@@ -23,13 +23,12 @@ export class Parser {
     const gitignorePatterns = fs.existsSync(gitignorePath)
       ? fs
           .readFileSync(gitignorePath, "utf-8")
-          .split("\n")
-          .map((line) => line.trim())
+          .split(/\r?\n/)
           .filter((line) => line && !line.startsWith("#"))
       : [];
 
     const reportContent = fs.readFileSync(reportPath, "utf-8");
-    const lines = reportContent.split("\n").filter((line) => line.trim());
+    const lines = reportContent.split(/\r?\n/).filter(Boolean);
 
     lines.forEach((line) => {
       try {

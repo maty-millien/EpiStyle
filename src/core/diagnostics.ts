@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ERROR_DESCRIPTIONS } from "../config/constants";
+import { CONFIG_SECTION, ERROR_DESCRIPTIONS } from "../config/constants";
 import { IErrorCode } from "../config/types";
 import { Debugger } from "../utils/debugger";
 
@@ -8,17 +8,17 @@ export class Diagnostics {
     vscode.languages.createDiagnosticCollection("coding-style");
 
   private static getSeverityLevel(severity: string): vscode.DiagnosticSeverity {
-    switch (severity) {
-      case "MAJOR":
-        return vscode.DiagnosticSeverity.Warning;
-      case "MINOR":
-        return vscode.DiagnosticSeverity.Warning;
-      case "INFO":
-        return vscode.DiagnosticSeverity.Information;
-      default:
-        Debugger.warn("Diagnostics", "Unknown severity level", { severity });
-        return vscode.DiagnosticSeverity.Hint;
+    const severityMap: Record<string, vscode.DiagnosticSeverity> = {
+      MAJOR: vscode.DiagnosticSeverity.Warning,
+      MINOR: vscode.DiagnosticSeverity.Warning,
+      INFO: vscode.DiagnosticSeverity.Information,
+    };
+    const level = severityMap[severity];
+    if (level !== undefined) {
+      return level;
     }
+    Debugger.warn("Diagnostics", "Unknown severity level", { severity });
+    return vscode.DiagnosticSeverity.Hint;
   }
 
   private static createDiagnostic(error: IErrorCode): vscode.Diagnostic {
@@ -40,7 +40,7 @@ export class Diagnostics {
       severity
     );
 
-    diagnostic.source = "epitech-coding-style";
+    diagnostic.source = CONFIG_SECTION;
     diagnostic.code = error.code;
 
     return diagnostic;

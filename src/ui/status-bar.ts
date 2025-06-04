@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
+import { CONFIG_SECTION, TOGGLE_COMMAND } from "../config/constants";
 
 export class CodingStyleStatusBar {
   private static instance: CodingStyleStatusBar;
   private statusBarItem: vscode.StatusBarItem;
   private loadingInterval: NodeJS.Timeout | undefined;
-  private readonly configSection = "epitech-coding-style";
 
   private constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(
@@ -12,7 +12,7 @@ export class CodingStyleStatusBar {
       100
     );
     this.statusBarItem.name = "Epitech Coding Style";
-    this.statusBarItem.command = "epitech-coding-style.toggleMenu";
+    this.statusBarItem.command = TOGGLE_COMMAND;
     this.updateStatus(0);
     this.statusBarItem.show();
   }
@@ -47,7 +47,7 @@ export class CodingStyleStatusBar {
 
   public updateStatus(errorCount: number) {
     this.stopLoadingAnimation();
-    const config = vscode.workspace.getConfiguration(this.configSection);
+    const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
     const isEnabled = config.get<boolean>("enable") ?? true;
 
     if (!isEnabled) {
@@ -84,12 +84,9 @@ export class CodingStyleStatusBar {
     command: () => Promise<void>
   ) {
     context.subscriptions.push(this.statusBarItem);
-    this.statusBarItem.command = "epitech-coding-style.toggleMenu";
+    this.statusBarItem.command = TOGGLE_COMMAND;
     context.subscriptions.push(
-      vscode.commands.registerCommand(
-        "epitech-coding-style.toggleMenu",
-        command
-      )
+      vscode.commands.registerCommand(TOGGLE_COMMAND, command)
     );
   }
 }
