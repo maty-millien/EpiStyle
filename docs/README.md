@@ -17,7 +17,7 @@ A Visual Studio Code extension that enforces and validates Epitech coding style 
 ## ⬇️ Installation
 
 1. Ensure Docker is installed on your machine.
-2. Install this extension from the VS Code Marketplace or using the Extensions panel.
+2. Install this extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style) or using the Extensions panel.
 3. Reload VS Code and open your C project.
 
 ## 🐛 Known Issues
