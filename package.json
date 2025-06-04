@@ -1,9 +1,9 @@
 {
   "name": "epitech-vs-coding-style",
-  "displayName": "Epitech VS Coding Style",
+  "displayName": "Epitech Coding Style Real-Time Checker",
   "description": "Real-time coding style checker for Epitech students. Helps students maintain consistent code quality and follow Epitech standards.",
-  "icon": "resources/icon.png",
-  "version": "0.1.3",
+  "icon": "res/icon.png",
+  "version": "0.1.4",
   "publisher": "maty-millien",
   "license": "MIT",
   "author": {
@@ -15,7 +15,7 @@
     "url": "https://github.com/maty-mlln/epitech-vs-coding-style"
   },
   "engines": {
-    "vscode": "^1.40.0"
+    "vscode": "*"
   },
   "categories": [
     "Linters",
@@ -39,7 +39,7 @@
   "contributes": {
     "commands": [],
     "configuration": {
-      "title": "Epitech VS Coding Style",
+      "title": "Epitech Coding Style Real-Time Checker",
       "properties": {
         "epitech-coding-style.enable": {
           "type": "boolean",
