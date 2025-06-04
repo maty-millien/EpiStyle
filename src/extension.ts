@@ -5,12 +5,23 @@ import { AnalyzerService } from "./services/analyzer-service";
 import { CodingStyleStatusBar } from "./ui/status-bar";
 import { Debugger } from "./utils/debugger";
 
+/*
+
+Extension Class Definition ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
 export class Extension {
   private static configManager: ConfigurationManager;
   private static statusBar: CodingStyleStatusBar;
   private static analyzerService: AnalyzerService;
+  private static extensionContext: vscode.ExtensionContext;
 
-  private constructor() {}
+  /*
+
+Menu Handling Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   private static async showMenu() {
     const isEnabled = this.configManager.isEnabled();
@@ -27,7 +38,7 @@ export class Extension {
     ];
 
     const selected = await vscode.window.showQuickPick(items, {
-      title: "Epitech Coding Style Options",
+      title: "Epitech Coding Style Real-Time Checker Options",
     });
 
     if (selected) {
@@ -36,31 +47,46 @@ export class Extension {
     }
   }
 
+  /*
+
+Configuration Change Handler ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
   private static onConfigurationChanged(enabled: boolean) {
-    if (enabled) {
+    if (enabled)
       vscode.workspace.textDocuments.forEach(
         (doc) => void this.analyzeDocument(doc)
       );
-    } else {
+    else {
       this.statusBar.stopLoadingAnimation();
       this.statusBar.updateStatus(0);
       Diagnostics.clearDiagnostics();
     }
   }
 
+  /*
+
+Document Analysis Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
   private static async analyzeDocument(doc: vscode.TextDocument) {
-    if (!this.configManager.isEnabled()) {
-      return;
-    }
+    if (!this.configManager.isEnabled()) return;
+
     this.statusBar.startAnalysis();
     const errorCount = await this.analyzerService.analyze(
       doc,
       this.extensionContext
     );
-    if (errorCount >= 0) {
-      this.statusBar.updateStatus(errorCount);
-    }
+    if (errorCount >= 0) this.statusBar.updateStatus(errorCount);
   }
+
+  /*
+
+Extension Activation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   public static activate(context: vscode.ExtensionContext): void {
     Debugger.info("Extension", "Activating extension");
@@ -84,14 +110,24 @@ export class Extension {
     Debugger.info("Extension", "Extension activated successfully");
   }
 
+  /*
+
+Extension Deactivation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
   public static deactivate(): void {
     Debugger.info("Extension", "Extension deactivated");
     this.statusBar.dispose();
     Diagnostics.dispose();
   }
-
-  private static extensionContext: vscode.ExtensionContext;
 }
+
+/*
+
+Entry Points ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
 export function activate(context: vscode.ExtensionContext): void {
   Extension.activate(context);

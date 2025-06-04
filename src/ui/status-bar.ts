@@ -1,33 +1,53 @@
 import * as vscode from "vscode";
 import { CONFIG_SECTION, TOGGLE_COMMAND } from "../config/constants";
 
+/*
+
+Class Definition :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
 export class CodingStyleStatusBar {
   private static instance: CodingStyleStatusBar;
   private statusBarItem: vscode.StatusBarItem;
   private loadingInterval: NodeJS.Timeout | undefined;
+
+  /*
+
+Initialization ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   private constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
       100
     );
-    this.statusBarItem.name = "Epitech Coding Style";
-    this.statusBarItem.command = TOGGLE_COMMAND;
+    this.statusBarItem.name = "Epitech Coding Style Real-Time Checker";
     this.updateStatus(0);
     this.statusBarItem.show();
   }
 
+  /*
+
+Singleton Access :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
   public static getInstance(): CodingStyleStatusBar {
-    if (!CodingStyleStatusBar.instance) {
+    if (!CodingStyleStatusBar.instance)
       CodingStyleStatusBar.instance = new CodingStyleStatusBar();
-    }
     return CodingStyleStatusBar.instance;
   }
 
+  /*
+
+Animation Control :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
   private startLoadingAnimation() {
-    if (this.loadingInterval) {
-      return;
-    }
+    if (this.loadingInterval) return;
 
     const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     let i = 0;
@@ -44,6 +64,12 @@ export class CodingStyleStatusBar {
       this.loadingInterval = undefined;
     }
   }
+
+  /*
+
+Status Display :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   public updateStatus(errorCount: number) {
     this.stopLoadingAnimation();
@@ -70,14 +96,25 @@ export class CodingStyleStatusBar {
   }
 
   public startAnalysis() {
-    this.stopLoadingAnimation();
     this.startLoadingAnimation();
   }
+
+  /*
+
+Resource Management ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   public dispose() {
     this.stopLoadingAnimation();
     this.statusBarItem.dispose();
   }
+
+  /*
+
+Command Handling :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
 
   public registerCommand(
     context: vscode.ExtensionContext,
