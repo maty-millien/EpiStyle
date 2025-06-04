@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { CONFIG_SECTION, TOGGLE_COMMAND } from "../config/constants";
+import { CONFIG_SECTION, TOGGLE_COMMAND } from "../utils/constants";
 
 /*
 

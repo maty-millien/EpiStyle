@@ -1,10 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { BANNED_EXTENSIONS, getLogPath } from "../config/constants";
 import { Diagnostics } from "../core/diagnostics";
 import { Docker } from "../core/docker";
 import { Parser } from "../core/parser";
+import { BANNED_EXTENSIONS, getLogPath } from "../utils/constants";
 import { Debugger } from "../utils/debugger";
 
 /*

@@ -11,7 +11,7 @@ import {
   LOG_DIR,
   REPORT_MOUNT_DIR,
   getLogPath,
-} from "../config/constants";
+} from "../utils/constants";
 import { Debugger } from "../utils/debugger";
 
 const exec = promisify(execCallback);

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { CONFIG_SECTION, ERROR_DESCRIPTIONS } from "../config/constants";
-import { IErrorCode } from "../config/types";
+import { CONFIG_SECTION, ERROR_DESCRIPTIONS } from "../utils/constants";
 import { Debugger } from "../utils/debugger";
+import { IErrorCode } from "../utils/types";
 
 /*
 

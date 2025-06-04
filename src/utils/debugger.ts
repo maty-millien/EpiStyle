@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { IDebugDetails } from "../config/types";
+import { IDebugDetails } from "./types";
 
 /*
 

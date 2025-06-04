@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { ErrorSeverity, IFileErrors } from "../config/types";
 import { Debugger } from "../utils/debugger";
+import { ErrorSeverity, IFileErrors } from "../utils/types";
 
 /*
 
