@@ -1,17 +1,17 @@
 import * as vscode from "vscode";
-import { CONFIG_SECTION } from "../config/constants";
 import { Debugger } from "../utils/debugger";
+import { CONFIG_SECTION } from "./constants";
 
-export class ConfigurationManager {
-  private static instance: ConfigurationManager;
+export class ConfigManager {
+  private static instance: ConfigManager;
 
   private constructor() {}
 
-  public static getInstance(): ConfigurationManager {
-    if (!ConfigurationManager.instance) {
-      ConfigurationManager.instance = new ConfigurationManager();
+  public static getInstance(): ConfigManager {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager();
     }
-    return ConfigurationManager.instance;
+    return ConfigManager.instance;
   }
 
   public isEnabled(): boolean {

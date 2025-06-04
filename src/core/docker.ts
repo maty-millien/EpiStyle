@@ -16,6 +16,12 @@ import { Debugger } from "../utils/debugger";
 
 const exec = promisify(execCallback);
 
+/*
+
+DockerError class definition :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
 class DockerError extends Error {
   public constructor(message: string, public readonly exitCode?: number) {
     super(message);
@@ -23,10 +29,18 @@ class DockerError extends Error {
   }
 }
 
+/*
+
+Docker service class :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+*/
+
 export class Docker {
-  private static async delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  /*
+
+  Prune unused Docker images :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+  */
 
   private static async pruneDockerImages(): Promise<void> {
     Debugger.info("Docker", "Pruning unused images");
@@ -44,10 +58,21 @@ export class Docker {
     }
   }
 
+  /*
+
+  Pull Docker image with caching :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+  */
+
   private static async pullDockerImage(
     context: vscode.ExtensionContext
   ): Promise<void> {
-    const lastPull = context.globalState.get<number>(DOCKER_CACHE_KEY) || 0;
+    /*
+
+    Check image cache validity :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
+    const lastPull = context.globalState.get<number>(DOCKER_CACHE_KEY) ?? 0;
     const now = Date.now();
 
     if (now - lastPull < CACHE_DURATION_MS) {
@@ -55,6 +80,11 @@ export class Docker {
       return;
     }
 
+    /*
+
+    Execute docker pull command ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
     return new Promise<void>((resolve, reject) => {
       Debugger.info("Docker", "Pulling new image");
       const pullProcess = spawn("docker", ["pull", DOCKER_IMAGE], {
@@ -62,6 +92,11 @@ export class Docker {
       });
       let errorOutput = "";
 
+      /*
+
+      Handle pull process output :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+      */
       pullProcess.stdout.on("data", (data) => {
         Debugger.info("Docker", "Pull progress", {
           output: data.toString().trim(),
@@ -75,6 +110,11 @@ export class Docker {
         });
       });
 
+      /*
+
+      Handle pull completion :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+      */
       pullProcess.on("close", async (code) => {
         if (code !== 0) {
           reject(
@@ -96,23 +136,37 @@ export class Docker {
     });
   }
 
+  /*
+
+  Execute coding style check :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+  */
+
   public static async executeCheck(
     context: vscode.ExtensionContext,
     workspaceFolder?: vscode.WorkspaceFolder
   ): Promise<string> {
+    /*
+
+    Validate workspace selection :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
     Debugger.info("Docker", "Starting workspace check", {
       workspaceFolder: workspaceFolder?.uri.fsPath,
     });
 
     const activeWorkspaceFolder =
-      workspaceFolder ||
-      (vscode.workspace.workspaceFolders &&
-        vscode.workspace.workspaceFolders[0]);
+      workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
     if (!activeWorkspaceFolder) {
       Debugger.info("Docker", "No workspace folder found");
       throw new Error("No workspace folder found");
     }
 
+    /*
+
+    Prepare log directory ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
     const workspacePath = activeWorkspaceFolder.uri.fsPath;
     const logDirPath = path.join(workspacePath, LOG_DIR);
     const reportPath = getLogPath(workspacePath);
@@ -122,6 +176,11 @@ export class Docker {
       fs.mkdirSync(logDirPath, { recursive: true });
     }
 
+    /*
+
+    Ensure Docker image exists :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
     try {
       await this.pullDockerImage(context);
     } catch (error) {
@@ -130,6 +189,11 @@ export class Docker {
       });
     }
 
+    /*
+
+    Run Docker container :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
     return new Promise<string>((resolve, reject) => {
       const escapedWorkspacePath = `"${workspacePath.replace(/"/g, '\\"')}"`;
       const escapedReportPath = `"${path
@@ -156,6 +220,11 @@ export class Docker {
       });
       let errorOutput = "";
 
+      /*
+
+    Handle container output :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
       containerProcess.stdout.on("data", (data) => {
         Debugger.info("Docker", "Container stdout", {
           output: data.toString().trim(),
@@ -169,6 +238,11 @@ export class Docker {
         });
       });
 
+      /*
+
+    Handle container completion ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    */
       containerProcess.on("close", (code) => {
         if (code !== 0) {
           reject(

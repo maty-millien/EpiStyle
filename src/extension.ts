@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { ConfigurationManager } from "./config/configuration-manager";
+import { ConfigManager } from "./config/configManager";
 import { Diagnostics } from "./core/diagnostics";
-import { AnalyzerService } from "./services/analyzer-service";
+import { AnalyzerService } from "./services/analyzerService";
 import { CodingStyleStatusBar } from "./ui/status-bar";
 import { Debugger } from "./utils/debugger";
 
@@ -12,7 +12,7 @@ Extension Class Definition :::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
 export class Extension {
-  private static configManager: ConfigurationManager;
+  private static configManager: ConfigManager;
   private static statusBar: CodingStyleStatusBar;
   private static analyzerService: AnalyzerService;
   private static extensionContext: vscode.ExtensionContext;
@@ -92,7 +92,7 @@ Extension Activation :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     Debugger.info("Extension", "Activating extension");
     this.extensionContext = context;
 
-    this.configManager = ConfigurationManager.getInstance();
+    this.configManager = ConfigManager.getInstance();
     this.statusBar = CodingStyleStatusBar.getInstance();
     this.analyzerService = AnalyzerService.getInstance();
 
