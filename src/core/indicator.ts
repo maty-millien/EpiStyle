@@ -7,8 +7,8 @@ Class Definition :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-export class CodingStyleStatusBar {
-  private static instance: CodingStyleStatusBar;
+export class StatusBarIndicator {
+  private static instance: StatusBarIndicator;
   private statusBarItem: vscode.StatusBarItem;
   private loadingInterval: NodeJS.Timeout | undefined;
 
@@ -34,10 +34,10 @@ Singleton Access :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-  public static getInstance(): CodingStyleStatusBar {
-    if (!CodingStyleStatusBar.instance)
-      CodingStyleStatusBar.instance = new CodingStyleStatusBar();
-    return CodingStyleStatusBar.instance;
+  public static getInstance(): StatusBarIndicator {
+    if (!StatusBarIndicator.instance)
+      StatusBarIndicator.instance = new StatusBarIndicator();
+    return StatusBarIndicator.instance;
   }
 
   /*

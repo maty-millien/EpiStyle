@@ -1,11 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { Diagnostics } from "../core/diagnostics";
-import { Docker } from "../core/docker";
-import { Parser } from "../core/parser";
 import { BANNED_EXTENSIONS, getLogPath } from "../utils/constants";
-import { Debugger } from "../utils/debugger";
+import { Diagnostics } from "./diagnostics";
+import { Docker } from "./docker";
+import { Parser } from "./parser";
 
 /*
 
@@ -48,7 +47,6 @@ Document validation - checks if file should be analyzed:::::::::::::::::::::::::
 
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri);
     if (!workspaceFolder) {
-      Debugger.info("AnalyzerService", "No workspace folder found");
       return false;
     }
     return true;
@@ -78,7 +76,6 @@ Main analysis workflow - runs coding style checks:::::::::::::::::::::::::::::::
     context: vscode.ExtensionContext
   ): Promise<number> {
     if (this.isAnalysisRunning) {
-      Debugger.info("AnalyzerService", "Analysis already running, debouncing");
       this.clearDebounceTimer();
 
       return new Promise((resolve) => {
@@ -94,7 +91,8 @@ Main analysis workflow - runs coding style checks:::::::::::::::::::::::::::::::
     this.isAnalysisRunning = true;
     try {
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri)!;
-      Diagnostics.clearDiagnostics();
+
+      Diagnostics.updateDiagnostics(doc.uri, []);
 
       const reportPath = getLogPath(workspaceFolder.uri.fsPath);
       if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath);
@@ -126,9 +124,6 @@ Result processing - aggregates errors and updates diagnostics:::::::::::::::::::
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      Debugger.error("AnalyzerService", "Analysis failed", {
-        error: errorMessage,
-      });
       void vscode.window.showErrorMessage(
         `Failed to analyze workspace\n${errorMessage}`
       );

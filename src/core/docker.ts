@@ -43,18 +43,10 @@ export class Docker {
   */
 
   private static async pruneDockerImages(): Promise<void> {
-    Debugger.info("Docker", "Pruning unused images");
     try {
-      const { stdout, stderr } = await exec("docker image prune -f");
-      if (stderr) {
-        Debugger.warn("Docker", "Prune warnings", { stderr });
-      } else {
-        Debugger.info("Docker", "Prune successful", { stdout });
-      }
+      await exec("docker image prune -f");
     } catch (error: any) {
-      Debugger.warn("Docker", "Prune failed", {
-        error: error.message || error,
-      });
+      Debugger.error("Docker", "Prune failed", { error: error.message || error });
     }
   }
 
@@ -76,7 +68,6 @@ export class Docker {
     const now = Date.now();
 
     if (now - lastPull < CACHE_DURATION_MS) {
-      Debugger.info("Docker", "Using cached image");
       return;
     }
 
@@ -86,7 +77,6 @@ export class Docker {
 
     */
     return new Promise<void>((resolve, reject) => {
-      Debugger.info("Docker", "Pulling new image");
       const pullProcess = spawn("docker", ["pull", DOCKER_IMAGE], {
         shell: true,
       });
@@ -98,16 +88,10 @@ export class Docker {
 
       */
       pullProcess.stdout.on("data", (data) => {
-        Debugger.info("Docker", "Pull progress", {
-          output: data.toString().trim(),
-        });
       });
 
       pullProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
-        Debugger.info("Docker", "Pull stderr", {
-          output: data.toString().trim(),
-        });
       });
 
       /*
@@ -151,14 +135,9 @@ export class Docker {
     Validate workspace selection :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     */
-    Debugger.info("Docker", "Starting workspace check", {
-      workspaceFolder: workspaceFolder?.uri.fsPath,
-    });
-
     const activeWorkspaceFolder =
       workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
     if (!activeWorkspaceFolder) {
-      Debugger.info("Docker", "No workspace folder found");
       throw new Error("No workspace folder found");
     }
 
@@ -172,7 +151,6 @@ export class Docker {
     const reportPath = getLogPath(workspacePath);
 
     if (!fs.existsSync(logDirPath)) {
-      Debugger.info("Docker", "Creating .vscode directory");
       fs.mkdirSync(logDirPath, { recursive: true });
     }
 
@@ -184,9 +162,6 @@ export class Docker {
     try {
       await this.pullDockerImage(context);
     } catch (error) {
-      Debugger.warn("Docker", "Using cached image after pull failure", {
-        error,
-      });
     }
 
     /*
@@ -213,7 +188,6 @@ export class Docker {
         REPORT_MOUNT_DIR,
       ];
 
-      Debugger.info("Docker", "Running container", { args });
       const containerProcess = spawn("docker", args, {
         shell: true,
         windowsHide: true,
@@ -225,17 +199,8 @@ export class Docker {
     Handle container output :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     */
-      containerProcess.stdout.on("data", (data) => {
-        Debugger.info("Docker", "Container stdout", {
-          output: data.toString().trim(),
-        });
-      });
-
       containerProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
-        Debugger.info("Docker", "Container stderr", {
-          output: data.toString().trim(),
-        });
       });
 
       /*

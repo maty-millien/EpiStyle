@@ -43,13 +43,6 @@ Creates a new VS Code diagnostic object from a given error code and details ::::
       ERROR_DESCRIPTIONS[error.code] || "No description available";
     const range = new vscode.Range(error.line, 0, error.line, Number.MAX_VALUE);
 
-    Debugger.info("Diagnostics", "Creating diagnostic", {
-      code: error.code,
-      line: error.line,
-      severity,
-      description,
-    });
-
     const diagnostic = new vscode.Diagnostic(
       range,
       `${error.code} - ${description}`,
@@ -69,11 +62,6 @@ Updates the diagnostic collection for a specific URI with a list of errors :::::
 */
 
   public static updateDiagnostics(uri: vscode.Uri, errors: IErrorCode[]): void {
-    Debugger.info("Diagnostics", "Updating diagnostics", {
-      file: uri.fsPath,
-      errorCount: errors.length,
-    });
-
     const diagnostics = errors.map((error) => this.createDiagnostic(error));
     this.collection.set(uri, diagnostics);
   }
@@ -85,8 +73,21 @@ Clears all diagnostics from the collection, removing them from all files :::::::
 */
 
   public static clearDiagnostics(): void {
-    Debugger.info("Diagnostics", "Clearing all diagnostics");
     this.collection.clear();
+  }
+
+  /*
+
+  Counts the total number of diagnostics across all files in the collection.:::::::::::::::::::::
+
+  */
+
+  public static getTotalErrors(): number {
+    let total = 0;
+    this.collection.forEach((uri, diagnostics) => {
+      total += diagnostics.length;
+    });
+    return total;
   }
 
   /*
@@ -96,7 +97,6 @@ Disposes of the diagnostic collection, releasing all associated resources ::::::
 */
 
   public static dispose(): void {
-    Debugger.info("Diagnostics", "Disposing diagnostic collection");
     this.collection.dispose();
   }
 }

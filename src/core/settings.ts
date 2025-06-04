@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
-import { CONFIG_SECTION } from "./constants";
-import { Debugger } from "./debugger";
+import { CONFIG_SECTION } from "../utils/constants";
 
 export class Settings {
   private static instance: Settings;
@@ -29,6 +28,7 @@ export class Settings {
   */
 
   public isEnabled(): boolean {
+    this._config = vscode.workspace.getConfiguration(CONFIG_SECTION);
     return this._config.get<boolean>("enable") ?? true;
   }
 
@@ -40,10 +40,6 @@ export class Settings {
 
   public async setEnabled(enabled: boolean): Promise<void> {
     await this._config.update("enable", enabled, true);
-    Debugger.info(
-      "ConfigurationManager",
-      `Extension ${enabled ? "enabled" : "disabled"}`
-    );
   }
 
   /*

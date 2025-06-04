@@ -13,11 +13,6 @@ export class Parser {
     reportPath: string,
     workspacePath: string
   ): IFileErrors {
-    Debugger.info("Parser", "Starting report parsing", {
-      reportPath,
-      workspacePath,
-    });
-
     const fileErrors: IFileErrors = {};
     if (!fs.existsSync(reportPath)) {
       Debugger.warn("Parser", "Report file not found", { reportPath });
@@ -61,16 +56,10 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
           : filePath;
 
         if (this.isTestFile(relativeFilePath)) {
-          Debugger.info("Parser", "Skipping test file", {
-            filePath: relativeFilePath,
-          });
           continue;
         }
 
         if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
-          Debugger.info("Parser", "Skipping ignored file", {
-            filePath: relativeFilePath,
-          });
           continue;
         }
 
@@ -86,19 +75,6 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
         Debugger.error("Parser", "Error parsing line", { error, line });
       }
     }
-
-    /*
-
-Log parsing results and return file errors ::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-    Debugger.info("Parser", "Finished parsing", {
-      totalFiles: Object.keys(fileErrors).length,
-      totalErrors: Object.values(fileErrors).reduce(
-        (sum, errors) => sum + errors.length,
-        0
-      ),
-    });
 
     return fileErrors;
   }
