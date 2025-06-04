@@ -7,7 +7,7 @@ export class Settings {
 
   /*
 
-  Comment : Initializes the Settings class and handles instance creation.::::::::::::::::::::::::::::::
+  Initializes the Settings class and handles instance creation.::::::::::::::::::::::::::::::::::::
 
   */
 
@@ -23,7 +23,7 @@ export class Settings {
 
   /*
 
-  Comment : Checks if the extension is currently enabled in user settings.::::::::::::::::::::::::::::::::::
+  Checks if the extension is currently enabled in user settings.:::::::::::::::::::::::::::::::::::
 
   */
 
@@ -34,7 +34,7 @@ export class Settings {
 
   /*
 
-  Comment : Updates the extension's enabled state in user settings.::::::::::::::::::::::::::::::::::::::::::
+  Updates the extension's enabled state in user settings.::::::::::::::::::::::::::::::::::::::::::
 
   */
 
@@ -44,7 +44,7 @@ export class Settings {
 
   /*
 
-  Comment : Registers a handler for changes to the 'enable' configuration setting.::::::::::::::::::::::::
+  Registers a handler for changes to the 'enable' configuration setting.:::::::::::::::::::::::::::
 
   */
 
