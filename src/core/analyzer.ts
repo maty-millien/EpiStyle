@@ -12,14 +12,14 @@ AnalyzerService class - main entry point for analysis operations::::::::::::::::
 
 */
 
-export class AnalyzerService {
+export class Analyzer {
   /*
 
 Class properties - state and configuration:::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-  private static instance: AnalyzerService;
+  private static instance: Analyzer;
   private isAnalysisRunning: boolean = false;
   private debounceTimer: NodeJS.Timeout | undefined;
   private static readonly DEBOUNCE_DELAY = 500; // ms
@@ -30,10 +30,10 @@ Singleton instance accessor:::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-  public static getInstance(): AnalyzerService {
-    if (!AnalyzerService.instance)
-      AnalyzerService.instance = new AnalyzerService();
-    return AnalyzerService.instance;
+  public static getInstance(): Analyzer {
+    if (!Analyzer.instance)
+      Analyzer.instance = new Analyzer();
+    return Analyzer.instance;
   }
 
   /*
@@ -46,9 +46,7 @@ Document validation - checks if file should be analyzed:::::::::::::::::::::::::
     if (BANNED_EXTENSIONS.includes(doc.languageId)) return false;
 
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(doc.uri);
-    if (!workspaceFolder) {
-      return false;
-    }
+    if (!workspaceFolder) return false;
     return true;
   }
 
@@ -82,7 +80,7 @@ Main analysis workflow - runs coding style checks:::::::::::::::::::::::::::::::
         this.debounceTimer = setTimeout(async () => {
           const result = await this.analyze(doc, context);
           resolve(result);
-        }, AnalyzerService.DEBOUNCE_DELAY);
+        }, Analyzer.DEBOUNCE_DELAY);
       });
     }
 

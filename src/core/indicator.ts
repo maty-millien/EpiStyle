@@ -7,9 +7,9 @@ Class Definition :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-export class StatusBarIndicator {
-  private static instance: StatusBarIndicator;
-  private statusBarItem: vscode.StatusBarItem;
+export class Indicator {
+  private static instance: Indicator;
+  private indicatorItem: vscode.StatusBarItem;
   private loadingInterval: NodeJS.Timeout | undefined;
 
   /*
@@ -19,13 +19,13 @@ Initialization :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
   private constructor() {
-    this.statusBarItem = vscode.window.createStatusBarItem(
+    this.indicatorItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
       100
     );
-    this.statusBarItem.name = "Epitech Coding Style Real-Time Checker";
+    this.indicatorItem.name = "Epitech Coding Style Real-Time Checker";
     this.updateStatus(0);
-    this.statusBarItem.show();
+    this.indicatorItem.show();
   }
 
   /*
@@ -34,10 +34,10 @@ Singleton Access :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-  public static getInstance(): StatusBarIndicator {
-    if (!StatusBarIndicator.instance)
-      StatusBarIndicator.instance = new StatusBarIndicator();
-    return StatusBarIndicator.instance;
+  public static getInstance(): Indicator {
+    if (!Indicator.instance)
+      Indicator.instance = new Indicator();
+    return Indicator.instance;
   }
 
   /*
@@ -51,9 +51,9 @@ Animation Control ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     let i = 0;
-    this.statusBarItem.text = `$(loading~spin)  Analyzing...`;
+    this.indicatorItem.text = `$(loading~spin)  Analyzing...`;
     this.loadingInterval = setInterval(() => {
-      this.statusBarItem.text = `${frames[i]}  Analyzing...`;
+      this.indicatorItem.text = `${frames[i]}  Analyzing...`;
       i = (i + 1) % frames.length;
     }, 80);
   }
@@ -77,19 +77,19 @@ Status Display :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     const isEnabled = config.get<boolean>("enable") ?? true;
 
     if (!isEnabled) {
-      this.statusBarItem.text = `$(debug-disconnect) Disabled`;
-      this.statusBarItem.backgroundColor = undefined;
+      this.indicatorItem.text = `$(debug-disconnect) Disabled`;
+      this.indicatorItem.backgroundColor = undefined;
       return;
     }
 
     if (errorCount === 0) {
-      this.statusBarItem.text = `$(check) No Coding Style Errors`;
-      this.statusBarItem.backgroundColor = undefined;
+      this.indicatorItem.text = `$(check) No Coding Style Errors`;
+      this.indicatorItem.backgroundColor = undefined;
     } else {
-      this.statusBarItem.text = `$(alert) ${errorCount} Coding Style Error${
+      this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${
         errorCount > 1 ? "s" : ""
       }`;
-      this.statusBarItem.backgroundColor = new vscode.ThemeColor(
+      this.indicatorItem.backgroundColor = new vscode.ThemeColor(
         "statusBarItem.warningBackground"
       );
     }
@@ -107,7 +107,7 @@ Resource Management ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   public dispose() {
     this.stopLoadingAnimation();
-    this.statusBarItem.dispose();
+    this.indicatorItem.dispose();
   }
 
   /*
@@ -120,8 +120,8 @@ Command Handling :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     context: vscode.ExtensionContext,
     command: () => Promise<void>
   ) {
-    context.subscriptions.push(this.statusBarItem);
-    this.statusBarItem.command = TOGGLE_COMMAND;
+    context.subscriptions.push(this.indicatorItem);
+    this.indicatorItem.command = TOGGLE_COMMAND;
     context.subscriptions.push(
       vscode.commands.registerCommand(TOGGLE_COMMAND, command)
     );

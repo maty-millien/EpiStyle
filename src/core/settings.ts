@@ -48,7 +48,7 @@ export class Settings {
 
   */
 
-  public registerConfigurationChangeHandler(
+  public registerSettingsChangeHandler(
     handler: (enabled: boolean) => void
   ): vscode.Disposable {
     return vscode.workspace.onDidChangeConfiguration((event) => {

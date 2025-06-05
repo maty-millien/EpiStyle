@@ -18,19 +18,6 @@ const exec = promisify(execCallback);
 
 /*
 
-DockerError class definition :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
-class DockerError extends Error {
-  public constructor(message: string, public readonly exitCode?: number) {
-    super(message);
-    this.name = "DockerError";
-  }
-}
-
-/*
-
 Docker service class :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
@@ -67,15 +54,14 @@ export class Docker {
     const lastPull = context.globalState.get<number>(DOCKER_CACHE_KEY) ?? 0;
     const now = Date.now();
 
-    if (now - lastPull < CACHE_DURATION_MS) {
-      return;
-    }
+    if (now - lastPull < CACHE_DURATION_MS) return;
 
     /*
 
     Execute docker pull command ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     */
+
     return new Promise<void>((resolve, reject) => {
       const pullProcess = spawn("docker", ["pull", DOCKER_IMAGE], {
         shell: true,
@@ -87,9 +73,6 @@ export class Docker {
       Handle pull process output :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
       */
-      pullProcess.stdout.on("data", (data) => {
-      });
-
       pullProcess.stderr.on("data", (data) => {
         errorOutput += data.toString();
       });
@@ -101,12 +84,7 @@ export class Docker {
       */
       pullProcess.on("close", async (code) => {
         if (code !== 0) {
-          reject(
-            new DockerError(
-              `Failed to pull image: ${errorOutput}`,
-              code ?? undefined
-            )
-          );
+          reject(new Error(`Failed to pull image: ${errorOutput}`));
         } else {
           context.globalState.update(DOCKER_CACHE_KEY, now);
           await this.pruneDockerImages();
@@ -115,7 +93,7 @@ export class Docker {
       });
 
       pullProcess.on("error", (error) => {
-        reject(new DockerError(`Failed to execute pull: ${error.message}`));
+        reject(new Error(`Failed to execute pull: ${error.message}`));
       });
     });
   }
@@ -137,9 +115,7 @@ export class Docker {
     */
     const activeWorkspaceFolder =
       workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
-    if (!activeWorkspaceFolder) {
-      throw new Error("No workspace folder found");
-    }
+    if (!activeWorkspaceFolder) throw new Error("No workspace folder found");
 
     /*
 
@@ -150,9 +126,7 @@ export class Docker {
     const logDirPath = path.join(workspacePath, LOG_DIR);
     const reportPath = getLogPath(workspacePath);
 
-    if (!fs.existsSync(logDirPath)) {
-      fs.mkdirSync(logDirPath, { recursive: true });
-    }
+    if (!fs.existsSync(logDirPath)) fs.mkdirSync(logDirPath, { recursive: true });
 
     /*
 
@@ -161,7 +135,10 @@ export class Docker {
     */
     try {
       await this.pullDockerImage(context);
-    } catch (error) {
+    } catch (error: any) {
+      Debugger.error("Docker", "Pull failed", {
+        error: error.message || error,
+      });
     }
 
     /*
@@ -209,20 +186,12 @@ export class Docker {
 
     */
       containerProcess.on("close", (code) => {
-        if (code !== 0) {
-          reject(
-            new DockerError(
-              `Container execution failed: ${errorOutput}`,
-              code ?? undefined
-            )
-          );
-        } else {
-          resolve(reportPath);
-        }
+        if (code !== 0) reject(new Error(`Container execution failed: ${errorOutput}`));
+        resolve(reportPath);
       });
 
       containerProcess.on("error", (error) => {
-        reject(new DockerError(`Container execution error: ${error.message}`));
+        reject(new Error(`Container execution error: ${error.message}`));
       });
     });
   }

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { AnalyzerService } from "./core/analyzer";
+import { Analyzer } from "./core/analyzer";
 import { Diagnostics } from "./core/diagnostics";
-import { StatusBarIndicator } from "./core/indicator";
+import { Indicator } from "./core/indicator";
 import { Settings } from "./core/settings";
 
 /*
@@ -11,9 +11,9 @@ Extension Class Definition :::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
 export class Extension {
-  private static configManager: Settings;
-  private static statusBar: StatusBarIndicator;
-  private static analyzerService: AnalyzerService;
+  private static settings: Settings;
+  private static indicator: Indicator;
+  private static analyzer: Analyzer;
   private static extensionContext: vscode.ExtensionContext;
   private static disposableAnalysisOnSave: vscode.Disposable | undefined;
 
@@ -24,26 +24,27 @@ Menu Handling Logic ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
   private static async showMenu() {
-    const isEnabled = this.configManager.isEnabled();
+    const isEnabled = this.settings.isEnabled();
 
-    const items = [
+    const selected = await vscode.window.showQuickPick(
+      [
+        {
+          label: `${isEnabled ? "$(check) " : ""}Enable Coding Style Check`,
+          description: isEnabled ? "Currently enabled" : "Currently disabled",
+        },
+        {
+          label: `${!isEnabled ? "$(check) " : ""}Disable Coding Style Check`,
+          description: !isEnabled ? "Currently disabled" : "Currently enabled",
+        },
+      ],
       {
-        label: `${isEnabled ? "$(check) " : ""}Enable Coding Style Check`,
-        description: isEnabled ? "Currently enabled" : "Currently disabled",
-      },
-      {
-        label: `${!isEnabled ? "$(check) " : ""}Disable Coding Style Check`,
-        description: !isEnabled ? "Currently disabled" : "Currently enabled",
-      },
-    ];
-
-    const selected = await vscode.window.showQuickPick(items, {
-      title: "Epitech Coding Style Real-Time Checker Options",
-    });
+        title: "Epitech Coding Style Real-Time Checker Options",
+      }
+    );
 
     if (selected) {
       const newValue = selected.label.includes("Enable");
-      await this.configManager.setEnabled(newValue);
+      await this.settings.setEnabled(newValue);
     }
   }
 
@@ -53,18 +54,18 @@ Configuration Change Handler :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 */
 
-  private static onConfigurationChanged(enabled: boolean) {
+  private static onSettingsChange(enabled: boolean) {
     if (enabled) {
       Diagnostics.clearDiagnostics();
       void Promise.all(
         vscode.workspace.textDocuments.map((doc) => this.analyzeDocument(doc))
       ).then(() => {
         const totalErrors = Diagnostics.getTotalErrors();
-        this.statusBar.updateStatus(totalErrors);
+        this.indicator.updateStatus(totalErrors);
       });
     } else {
-      this.statusBar.stopLoadingAnimation();
-      this.statusBar.updateStatus(0);
+      this.indicator.stopLoadingAnimation();
+      this.indicator.updateStatus(0);
       Diagnostics.clearDiagnostics();
     }
   }
@@ -76,18 +77,17 @@ Document Analysis Logic ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
   private static async analyzeDocument(doc: vscode.TextDocument) {
-    if (!this.configManager.isEnabled()) {
-      return;
-    }
+    if (!this.settings.isEnabled()) return;
 
-    Diagnostics.updateDiagnostics(doc.uri, []);
+    Diagnostics.clearDiagnostics();
 
-    this.statusBar.startAnalysis();
-    const errorCount = await this.analyzerService.analyze(
+    this.indicator.startAnalysis();
+
+    const errorCount = await this.analyzer.analyze(
       doc,
       this.extensionContext
     );
-    if (errorCount >= 0) this.statusBar.updateStatus(errorCount);
+    if (errorCount >= 0) this.indicator.updateStatus(errorCount);
   }
 
   /*
@@ -118,21 +118,20 @@ Extension Activation :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   public static activate(context: vscode.ExtensionContext): void {
     this.extensionContext = context;
+    this.settings = Settings.getInstance();
+    this.indicator = Indicator.getInstance();
+    this.analyzer = Analyzer.getInstance();
 
-    this.configManager = Settings.getInstance();
-    this.statusBar = StatusBarIndicator.getInstance();
-    this.analyzerService = AnalyzerService.getInstance();
-
-    this.statusBar.registerCommand(context, () => this.showMenu());
+    this.indicator.registerCommand(context, () => this.showMenu());
 
     context.subscriptions.push(
-      this.configManager.registerConfigurationChangeHandler((enabled) => {
-        this.onConfigurationChanged(enabled);
+      this.settings.registerSettingsChangeHandler((enabled) => {
+        this.onSettingsChange(enabled);
         Extension.setupAnalysisOnSave(enabled);
       })
     );
 
-    Extension.setupAnalysisOnSave(this.configManager.isEnabled());
+    Extension.setupAnalysisOnSave(this.settings.isEnabled());
   }
 
   /*
@@ -142,11 +141,9 @@ Extension Deactivation :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 */
 
   public static deactivate(): void {
-    this.statusBar.dispose();
+    this.indicator.dispose();
     Diagnostics.dispose();
-    if (Extension.disposableAnalysisOnSave) {
-      Extension.disposableAnalysisOnSave.dispose();
-    }
+    if (Extension.disposableAnalysisOnSave) Extension.disposableAnalysisOnSave.dispose();
   }
 }
 

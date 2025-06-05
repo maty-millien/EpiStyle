@@ -55,13 +55,9 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
           ? filePath.slice(2)
           : filePath;
 
-        if (this.isTestFile(relativeFilePath)) {
-          continue;
-        }
+        if (this.isTestFile(relativeFilePath)) continue;
 
-        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
-          continue;
-        }
+        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) continue;
 
         if (!fileErrors[relativeFilePath]) fileErrors[relativeFilePath] = [];
 
@@ -75,7 +71,6 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
         Debugger.error("Parser", "Error parsing line", { error, line });
       }
     }
-
     return fileErrors;
   }
 
