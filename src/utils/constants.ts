@@ -1,11 +1,5 @@
 import * as path from "path";
 
-/*
-
-Defines core configuration constants for the extension, including paths and command names.
-
-*/
-
 export const CONFIG_SECTION = "epitech-coding-style";
 export const TOGGLE_COMMAND = `${CONFIG_SECTION}.toggleMenu`;
 
@@ -18,19 +12,7 @@ export const getLogPath = (workspaceRoot: string): string => {
   return path.join(workspaceRoot, LOG_DIR, EXPORT_FILE);
 };
 
-/*
-
-Defines constants related to file extensions, such as those banned from processing.
-
-*/
-
 export const BANNED_EXTENSIONS = ["md"];
-
-/*
-
-Provides detailed descriptions for various Epitech coding style error codes.
-
-*/
 
 export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-O1": "Repository contains compiled, temporary or unnecessary files",
@@ -76,12 +58,6 @@ export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-A3": "Missing line break at end of file",
   "C-A4": "Missing static keyword for internal functions/variables",
 };
-
-/*
-
-Defines constants related to Docker image management and caching for the checker.
-
-*/
 
 export const DOCKER_IMAGE = "ghcr.io/epitech/coding-style-checker:latest";
 export const DOCKER_CACHE_KEY = "lastImagePull";

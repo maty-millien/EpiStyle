@@ -13,7 +13,6 @@ export class Indicator {
       100
     );
     this.indicatorItem.name = "Epitech Coding Style Checker";
-    this.updateStatus(0);
     this.indicatorItem.show();
   }
 
@@ -24,16 +23,11 @@ export class Indicator {
   }
 
 
-  private startLoadingAnimation() {
+  public startLoadingAnimation() {
     if (this.loadingInterval) return;
 
-    this.indicatorItem.backgroundColor = new vscode.ThemeColor(
-      "statusBarItem.background"
-    );
-    this.indicatorItem.color = new vscode.ThemeColor(
-      "statusBarItem.foreground"
-    );
-
+    this.indicatorItem.backgroundColor = undefined;
+    this.indicatorItem.color = undefined;
     this.indicatorItem.text = `$(loading~spin) Checking Coding Style`;
   }
 
@@ -46,13 +40,13 @@ export class Indicator {
   }
 
 
-  public updateStatus(errorCount: number) {
+  public updateStatus(errorCount: number, isEnabled?: boolean, message?: string) {
     this.stopLoadingAnimation();
     const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    const isEnabled = config.get<boolean>("enable") ?? true;
+    const currentEnabledState = isEnabled !== undefined ? isEnabled : (config.get<boolean>("enable") ?? true);
 
-    if (!isEnabled) {
-      this.indicatorItem.text = `$(debug-disconnect) Coding Style Checker Off`;
+    if (!currentEnabledState) {
+      this.indicatorItem.text = message || `$(debug-disconnect) Coding Style Checker Off`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
       return;
@@ -72,11 +66,6 @@ export class Indicator {
         "statusBarItem.warningForeground"
       );
     }
-  }
-
-
-  public startAnalysis() {
-    this.startLoadingAnimation();
   }
 
 

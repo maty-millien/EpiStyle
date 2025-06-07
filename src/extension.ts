@@ -4,11 +4,6 @@ import { Diagnostics } from "./core/diagnostics";
 import { Indicator } from "./core/indicator";
 import { Settings } from "./core/settings";
 
-/*
-
-Extension Class Definition ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
 export class Extension {
   private static settings: Settings;
@@ -17,58 +12,29 @@ export class Extension {
   private static extensionContext: vscode.ExtensionContext;
   private static disposableAnalysisOnSave: vscode.Disposable | undefined;
 
+
   private static async toggleEnabledState() {
     const isEnabled = this.settings.isEnabled();
+
+    if (isEnabled && Extension.disposableAnalysisOnSave) {
+      Extension.disposableAnalysisOnSave.dispose();
+      Extension.disposableAnalysisOnSave = undefined;
+    }
+
     await this.settings.setEnabled(!isEnabled);
   }
 
-  /*
 
-  Configuration Change Handler ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-  */
-
-  private static onSettingsChange(enabled: boolean) {
+  private static async onSettingsChange(enabled: boolean) {
     if (enabled) {
-      Diagnostics.clearDiagnostics();
-      void Promise.all(
-        vscode.workspace.textDocuments.map((doc) => this.analyzeDocument(doc))
-      ).then(() => {
-        const totalErrors = Diagnostics.getTotalErrors();
-        this.indicator.updateStatus(totalErrors);
-      });
+      let totalErrors = await this.analyzer.checkWorkspace(this.indicator, this.extensionContext, this.settings);
+      this.indicator.updateStatus(totalErrors, enabled);
     } else {
-      this.indicator.stopLoadingAnimation();
-      this.indicator.updateStatus(0);
-      Diagnostics.clearDiagnostics();
+      Diagnostics.clear();
+      this.indicator.updateStatus(0, enabled);
     }
   }
 
-  /*
-
-  Document Analysis Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-  */
-
-  private static async analyzeDocument(doc: vscode.TextDocument) {
-    if (!this.settings.isEnabled()) return;
-
-    Diagnostics.clearDiagnostics();
-
-    this.indicator.startAnalysis();
-
-    const errorCount = await this.analyzer.analyze(
-      doc,
-      this.extensionContext
-    );
-    if (errorCount >= 0) this.indicator.updateStatus(errorCount);
-  }
-
-  /*
-
-  Sets up or disposes the listener for document save events based on extension's enabled state.:::
-
-  */
 
   private static setupAnalysisOnSave(isEnabledNow: boolean): void {
     if (Extension.disposableAnalysisOnSave) {
@@ -78,17 +44,12 @@ export class Extension {
 
     if (isEnabledNow) {
       Extension.disposableAnalysisOnSave = vscode.workspace.onDidSaveTextDocument(
-        (doc) => void this.analyzeDocument(doc)
+        () => void this.analyzer.checkWorkspace(this.indicator, this.extensionContext, this.settings)
       );
       this.extensionContext.subscriptions.push(Extension.disposableAnalysisOnSave);
     }
   }
 
-  /*
-
-  Extension Activation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-  */
 
   public static activate(context: vscode.ExtensionContext): void {
     this.extensionContext = context;
@@ -106,13 +67,9 @@ export class Extension {
     );
 
     Extension.setupAnalysisOnSave(this.settings.isEnabled());
+    if (this.settings.isEnabled()) this.analyzer.checkWorkspace(this.indicator, this.extensionContext, this.settings);
   }
 
-  /*
-
-  Extension Deactivation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-  */
 
   public static deactivate(): void {
     this.indicator.dispose();
@@ -121,11 +78,6 @@ export class Extension {
   }
 }
 
-/*
-
-Entry Points ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
 export function activate(context: vscode.ExtensionContext): void {
   Extension.activate(context);
