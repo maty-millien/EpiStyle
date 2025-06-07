@@ -17,42 +17,16 @@ export class Extension {
   private static extensionContext: vscode.ExtensionContext;
   private static disposableAnalysisOnSave: vscode.Disposable | undefined;
 
-  /*
-
-Menu Handling Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
-  private static async showMenu() {
+  private static async toggleEnabledState() {
     const isEnabled = this.settings.isEnabled();
-
-    const selected = await vscode.window.showQuickPick(
-      [
-        {
-          label: `${isEnabled ? "$(check) " : ""}Enable Coding Style Check`,
-          description: isEnabled ? "Currently enabled" : "Currently disabled",
-        },
-        {
-          label: `${!isEnabled ? "$(check) " : ""}Disable Coding Style Check`,
-          description: !isEnabled ? "Currently disabled" : "Currently enabled",
-        },
-      ],
-      {
-        title: "Epitech Coding Style Real-Time Checker Options",
-      }
-    );
-
-    if (selected) {
-      const newValue = selected.label.includes("Enable");
-      await this.settings.setEnabled(newValue);
-    }
+    await this.settings.setEnabled(!isEnabled);
   }
 
   /*
 
-Configuration Change Handler ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  Configuration Change Handler ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-*/
+  */
 
   private static onSettingsChange(enabled: boolean) {
     if (enabled) {
@@ -72,9 +46,9 @@ Configuration Change Handler :::::::::::::::::::::::::::::::::::::::::::::::::::
 
   /*
 
-Document Analysis Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  Document Analysis Logic :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-*/
+  */
 
   private static async analyzeDocument(doc: vscode.TextDocument) {
     if (!this.settings.isEnabled()) return;
@@ -112,9 +86,9 @@ Document Analysis Logic ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   /*
 
-Extension Activation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  Extension Activation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-*/
+  */
 
   public static activate(context: vscode.ExtensionContext): void {
     this.extensionContext = context;
@@ -122,7 +96,7 @@ Extension Activation :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     this.indicator = Indicator.getInstance();
     this.analyzer = Analyzer.getInstance();
 
-    this.indicator.registerCommand(context, () => this.showMenu());
+    this.indicator.registerCommand(context, () => this.toggleEnabledState());
 
     context.subscriptions.push(
       this.settings.registerSettingsChangeHandler((enabled) => {
@@ -136,9 +110,9 @@ Extension Activation :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   /*
 
-Extension Deactivation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  Extension Deactivation ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-*/
+  */
 
   public static deactivate(): void {
     this.indicator.dispose();

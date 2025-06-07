@@ -3,7 +3,7 @@
   "displayName": "Epitech Coding Style Real-Time Checker",
   "description": "Real-time coding style checker for Epitech students. Helps students maintain consistent code quality and follow Epitech standards.",
   "icon": "assets/icon.png",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "maty-millien",
   "license": "MIT",
   "author": {
