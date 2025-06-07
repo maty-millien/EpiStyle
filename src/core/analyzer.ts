@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { getLogPath } from "../utils/constants";
-import { hasCFile } from "../utils/fileSearch";
+import { hasCFile } from "../utils/search";
 import { IErrorCode } from "../utils/types";
 import { Diagnostics } from "./diagnostics";
 import { Docker } from "./docker";
