@@ -14,6 +14,8 @@ A Visual Studio Code extension that enforces and validates **Epitech coding styl
 * ⚙️ **Customizable:** Control which files to analyze or exclude.
 * 📂 **.gitignore Aware:** Respects ignored files and directories.
 
+> 💡 **Tip:** For the best experience, install the [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) VS Code extension. It highlights errors and warnings directly in the editor.
+
 ## ⚠️ Requirements
 
 * [Docker](https://www.docker.com/) installed and running.
@@ -31,7 +33,7 @@ A Visual Studio Code extension that enforces and validates **Epitech coding styl
 3. View errors and warnings in:
 
    * **Problems panel**
-   * Inline diagnostics inside the editor
+   * Inline diagnostics inside the editor (enhanced with **Error Lens**)
 
 ## 🐛 Known Issues
 
