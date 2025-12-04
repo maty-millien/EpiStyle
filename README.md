@@ -1,49 +1,50 @@
-# 🎨 EpiStyle
+# EpiStyle
 
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/maty-millien.epitech-vs-coding-style?label=VS%20Marketplace&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/maty-millien.epitech-vs-coding-style?label=Installs&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
+[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/maty-millien.epitech-vs-coding-style?label=Rating&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![VS Code](https://img.shields.io/badge/editor-VS%20Code-blue?logo=visualstudiocode)](#)
-[![Docker](https://img.shields.io/badge/dependency-Docker-2496ED?logo=docker)](#)
+[![Docker](https://img.shields.io/badge/Requires-Docker-2496ED?logo=docker)](https://www.docker.com/)
 
-A Visual Studio Code extension that enforces and validates **Epitech coding style guidelines** for your C projects. It integrates seamlessly with the editor to provide instant feedback and keep your code compliant.
+A Visual Studio Code extension that enforces and validates **Epitech coding style guidelines** for C projects. Integrates seamlessly with the editor to provide instant feedback and keep your code compliant.
 
-## ✨ Features
+## Features
 
-* ⚡ **Real-time Analysis:** Runs a Docker-based style check automatically when you save or open a file.
-* 🐞 **In-Editor Diagnostics:** See coding style issues directly in the **Problems panel** and inline in the editor.
-* 📖 **Detailed Explanations:** Each violation includes a description for quick fixes.
-* ⚙️ **Customizable:** Control which files to analyze or exclude.
-* 📂 **.gitignore Aware:** Respects ignored files and directories.
+- **Real-time Analysis** — Runs Docker-based style checks automatically on file save or open
+- **In-Editor Diagnostics** — View coding style issues in the Problems panel and inline
+- **Detailed Explanations** — Each violation includes a description for quick resolution
+- **Customizable** — Control which files to analyze or exclude
+- **Gitignore Aware** — Respects ignored files and directories
 
-> 💡 **Tip:** For the best experience, install the [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) VS Code extension. It highlights errors and warnings directly in the editor.
+> **Tip:** For the best experience, install [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) to highlight errors directly in the editor.
 
-## ⚠️ Requirements
+## Requirements
 
-* [Docker](https://www.docker.com/) installed and running.
+- [Docker](https://www.docker.com/) installed and running
 
-## ⬇️ Installation
+## Installation
 
-1. Install Docker on your system.
-2. Install **EpiStyle** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style) or search `EpiStyle` in the Extensions panel.
-3. Reload VS Code and open your C project.
+1. Install Docker on your system
+2. Install **EpiStyle** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style) or search `EpiStyle` in the Extensions panel
+3. Reload VS Code and open your C project
 
-## 🚀 Usage
+## Usage
 
-1. Open a C project in VS Code.
-2. On file save or open, EpiStyle will automatically check your code style.
+1. Open a C project in VS Code
+2. On file save or open, EpiStyle automatically checks your code style
 3. View errors and warnings in:
+   - **Problems panel**
+   - Inline diagnostics (enhanced with Error Lens)
 
-   * **Problems panel**
-   * Inline diagnostics inside the editor (enhanced with **Error Lens**)
+## Known Issues
 
-## 🐛 Known Issues
+- Performance may degrade on very large projects
+- Non-standard project structures might need extra configuration
 
-* Performance may degrade on very large projects.
-* Non-standard project structures might need extra configuration.
+## Contributing
 
-## 🤝 Contributing
+Contributions are welcome. Please open issues or submit pull requests on [GitHub](https://github.com/maty-millien/EpiStyle).
 
-Contributions are welcome. Please open issues or submit pull requests.
+## License
 
-## 📜 License
-
-Distributed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
