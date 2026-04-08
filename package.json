@@ -17,23 +17,30 @@
   "engines": {
     "vscode": "^1.115.0"
   },
+  "scripts": {
+    "build": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external",
+    "typecheck": "tsc --noEmit",
+    "watch": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external --watch",
+    "clean": "rm -f *.vsix && rm -rf out",
+    "compile": "bun install && bun run build",
+    "test": "bun run clean && bun run compile && code --extensionDevelopmentPath=$PWD",
+    "release": "bun run scripts/release.ts"
+  },
   "categories": [
     "Linters",
-    "Formatters",
-    "Programming Languages",
     "Education"
   ],
   "keywords": [
     "epitech",
     "coding-style",
     "c",
-    "cpp",
-    "formatter"
+    "linter",
+    "checker",
+    "style"
   ],
   "activationEvents": [
     "onLanguage:c",
-    "onLanguage:makefile",
-    "onLanguage:cpp"
+    "onLanguage:makefile"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -48,17 +55,6 @@
         }
       }
     }
-  },
-  "scripts": {
-    "build": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external",
-    "build:prod": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external --minify",
-    "typecheck": "tsc --noEmit",
-    "watch": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external --watch",
-    "clean": "rm -f *.vsix && rm -rf out",
-    "compile": "bun install && bun run build",
-    "deploy": "bun run compile && vsce package --no-dependencies",
-    "publish": "bun run deploy && vsce publish --no-dependencies && bun run clean",
-    "test": "bun run clean && bun run compile && code --extensionDevelopmentPath=$PWD"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
