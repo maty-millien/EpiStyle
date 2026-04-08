@@ -15,5 +15,5 @@
     "skipLibCheck": true,
     "types": ["bun-types"]
   },
-  "exclude": ["node_modules", ".vscode-test", "out", "build.ts"]
+  "exclude": ["node_modules", ".vscode-test", "out"]
 }
