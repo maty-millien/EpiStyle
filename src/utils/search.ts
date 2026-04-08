@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 export async function hasCFile(directory: string): Promise<boolean> {
-  const cFileExtensions = [".c", ".h", ".cpp", ".hpp"];
+  const cFileExtensions = [".c", ".h"];
 
   async function searchDirectory(currentPath: string): Promise<boolean> {
     const entries = await fs.promises.readdir(currentPath, { withFileTypes: true });

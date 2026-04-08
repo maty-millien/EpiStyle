@@ -50,7 +50,7 @@ export class Analyzer {
 
       if (!foundCFile) {
         await settings.setEnabled(false);
-        indicator.updateStatus(0, false, "$(error) Not a C/C++ Project");
+        indicator.updateStatus(0, false, "$(error) Not a C Project");
         return 0;
       }
 
