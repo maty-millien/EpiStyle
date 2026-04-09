@@ -26,7 +26,7 @@ Catch style violations as you type and ship code that passes the Epitech norm â€
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.png" alt="EpiStyle inline diagnostics showing rule codes and descriptions" width="720" />
+<img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.png" alt="EpiStyle inline diagnostics showing rule codes and descriptions" width="100%" />
 
 <sub>Inline diagnostics with rule codes and plain-language descriptions, shown alongside <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
 
