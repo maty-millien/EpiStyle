@@ -10,7 +10,7 @@ export class Indicator {
       vscode.StatusBarAlignment.Right,
       100,
     );
-    this.indicatorItem.name = "Epitech Coding Style Checker";
+    this.indicatorItem.name = "EpiStyle";
     this.indicatorItem.command = TOGGLE_COMMAND;
     this.indicatorItem.show();
   }
@@ -38,7 +38,7 @@ export class Indicator {
   public startLoadingAnimation(): void {
     this.indicatorItem.backgroundColor = undefined;
     this.indicatorItem.color = undefined;
-    this.indicatorItem.text = `$(loading~spin) Checking Coding Style`;
+    this.indicatorItem.text = `$(loading~spin) EpiStyle: Checking`;
   }
 
   public updateStatus(
@@ -47,21 +47,20 @@ export class Indicator {
     message?: string,
   ): void {
     if (!isEnabled) {
-      this.indicatorItem.text =
-        message ?? `$(debug-disconnect) Coding Style Checker Off`;
+      this.indicatorItem.text = message ?? `$(debug-disconnect) EpiStyle: Off`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
       return;
     }
 
     if (errorCount === 0) {
-      this.indicatorItem.text = `$(check) No Coding Style Errors`;
+      this.indicatorItem.text = `$(check) EpiStyle: Clean`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
       return;
     }
 
-    this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${
+    this.indicatorItem.text = `$(alert) EpiStyle: ${errorCount} Warning${
       errorCount > 1 ? "s" : ""
     }`;
     this.indicatorItem.backgroundColor = new vscode.ThemeColor(

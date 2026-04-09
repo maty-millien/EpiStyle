@@ -40,6 +40,15 @@ export class Analyzer {
     this.isAnalysisRunning = true;
     indicator.startLoadingAnimation();
 
+    const bailIfDisabled = (): boolean => {
+      if (settings.isEnabled()) {
+        return false;
+      }
+      Diagnostics.clear();
+      indicator.updateStatus(0, false);
+      return true;
+    };
+
     try {
       const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
       let totalErrors = 0;
@@ -52,6 +61,10 @@ export class Analyzer {
           foundCFile = true;
           break;
         }
+      }
+
+      if (bailIfDisabled()) {
+        return 0;
       }
 
       if (!foundCFile) {
@@ -68,10 +81,15 @@ export class Analyzer {
           fs.unlinkSync(reportPath);
         }
 
-        const newReportPath = await Docker.executeCheck(
+        const newReportPath = await Docker.getInstance().executeCheck(
           context,
           workspaceFolder,
         );
+
+        if (bailIfDisabled()) {
+          return 0;
+        }
+
         const fileErrorsMap = Parser.parseReport(
           newReportPath,
           projectRoot,
@@ -93,6 +111,11 @@ export class Analyzer {
           Diagnostics.update(fileUri, errors);
         });
       }
+
+      if (bailIfDisabled()) {
+        return 0;
+      }
+
       indicator.updateStatus(totalErrors, true);
       return totalErrors;
     } catch (error) {

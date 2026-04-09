@@ -22,16 +22,27 @@ Catch style violations as you type and ship code that passes the Epitech norm �
 
 **EpiStyle** integrates the official Epitech coding style checker directly into Visual Studio Code. It runs automatically in the background and surfaces violations inline, in the Problems panel, and with detailed explanations — so you can fix issues before they ever reach a moulinette.
 
+## Preview
+
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.png" alt="EpiStyle inline diagnostics showing rule codes and descriptions" width="720" />
+
+<sub>Inline diagnostics with rule codes and plain-language descriptions, shown alongside <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
+
+</div>
+
 ## Features
 
 - **Real-time analysis** — Style checks run automatically on file save
-- **Inline diagnostics** — Errors and warnings appear in the Problems panel and inline
+- **Fast** — A persistent background container keeps per-save latency in milliseconds
+- **Inline diagnostics** — Warnings appear in the Problems panel and inline
 - **Detailed explanations** — Every violation comes with a clear description
-- **Customizable** — Toggle the checker on or off from settings
+- **Customizable** — Toggle the checker on or off from settings or the status bar
 - **Gitignore-aware** — Respects ignored files and directories
 - **Zero configuration** — Install, open a C project, and start coding
 
-> **Tip:** Pair EpiStyle with [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) for inline highlighting of errors and warnings.
+> **Tip:** Pair EpiStyle with [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) for inline highlighting of warnings.
 
 ## Requirements
 
@@ -40,7 +51,7 @@ Catch style violations as you type and ship code that passes the Epitech norm �
 | [Docker](https://www.docker.com/)                            | Runs the official Epitech style checker image |
 | [Visual Studio Code](https://code.visualstudio.com/) `1.74+` | Editor integration                            |
 
-Make sure Docker is installed and running before launching VS Code.
+Any Docker-compatible runtime works — [Docker Desktop](https://www.docker.com/products/docker-desktop/), [OrbStack](https://orbstack.dev/), [Colima](https://github.com/abiosoft/colima), [Rancher Desktop](https://rancherdesktop.io/), or a native `dockerd` on Linux. Make sure it is running before launching VS Code.
 
 ## Installation
 
@@ -67,6 +78,14 @@ No commands to run, no flags to remember.
 | `epitech-coding-style.excludePaths`   | `["tests/"]` | Gitignore-style patterns to exclude from analysis (applied on top of `.gitignore`) |
 
 Open VS Code settings (`Cmd`/`Ctrl + ,`) and search for **EpiStyle** to adjust.
+
+## Commands
+
+Open the command palette (`Cmd`/`Ctrl + Shift + P`) and type **EpiStyle** to access:
+
+| Command                                | Description                                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `EpiStyle: Restart Checker Containers` | Stops the background checker container, re-pulls the latest official image, and starts fresh. Use it after upstream updates. |
 
 ## Known Issues
 
