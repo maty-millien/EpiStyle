@@ -45,7 +45,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "epitech-coding-style.restartContainers",
+        "title": "EpiStyle: Restart Checker Containers"
+      }
+    ],
     "configuration": {
       "title": "Epitech Coding Style Real-Time Checker",
       "properties": {

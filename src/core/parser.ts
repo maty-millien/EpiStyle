@@ -4,7 +4,7 @@ import * as path from "path";
 import { Debugger } from "../utils/debugger";
 import { ErrorSeverity, IFileErrors } from "../utils/types";
 
-const LINE_REGEX = /^(.+?):(\d+):(MAJOR|MINOR|INFO):(C-[A-Z]+\d+)\s*$/;
+const LINE_REGEX = /^(.+?):(\d+):\s*(MAJOR|MINOR|INFO):(C-[A-Z]+\d+)\s*$/;
 
 export class Parser {
   public static parseReport(
