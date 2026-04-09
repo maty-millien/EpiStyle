@@ -4,13 +4,14 @@ import { IDebugDetails } from "./types";
 export class Debugger {
   private static channel: vscode.LogOutputChannel | null = null;
 
-  public static initialize(): void {
+  private static getChannel(): vscode.LogOutputChannel {
     if (!this.channel) {
       this.channel = vscode.window.createOutputChannel(
         "Epitech VS Coding Style Real-Time Checker",
         { log: true },
       );
     }
+    return this.channel;
   }
 
   private static log(
@@ -19,10 +20,7 @@ export class Debugger {
     action: string,
     details?: IDebugDetails,
   ): void {
-    if (!this.channel) {
-      this.initialize();
-    }
-    const channel = this.channel!;
+    const channel = this.getChannel();
 
     const message = `[${component}] ${action}`;
     switch (level) {

@@ -3,11 +3,6 @@ import { CONFIG_SECTION } from "../utils/constants";
 
 export class Settings {
   private static instance: Settings;
-  private _config: vscode.WorkspaceConfiguration;
-
-  private constructor() {
-    this._config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-  }
 
   public static getInstance(): Settings {
     if (!Settings.instance) {
@@ -16,18 +11,24 @@ export class Settings {
     return Settings.instance;
   }
 
+  private get config(): vscode.WorkspaceConfiguration {
+    return vscode.workspace.getConfiguration(CONFIG_SECTION);
+  }
+
   public isEnabled(): boolean {
-    this._config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    return this._config.get<boolean>("enable") ?? true;
+    return this.config.get<boolean>("enable") ?? true;
   }
 
   public shouldPersistLogFile(): boolean {
-    this._config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    return this._config.get<boolean>("persistLogFile") ?? false;
+    return this.config.get<boolean>("persistLogFile") ?? false;
   }
 
   public async setEnabled(enabled: boolean): Promise<void> {
-    await this._config.update("enable", enabled, true);
+    await this.config.update(
+      "enable",
+      enabled,
+      vscode.ConfigurationTarget.Global,
+    );
   }
 
   public registerSettingsChangeHandler(

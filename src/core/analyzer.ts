@@ -12,7 +12,8 @@ import { Settings } from "./settings";
 
 export class Analyzer {
   private static instance: Analyzer;
-  private isAnalysisRunning: boolean = false;
+  private isAnalysisRunning = false;
+  private pendingRerun = false;
 
   public static getInstance(): Analyzer {
     if (!Analyzer.instance) {
@@ -22,11 +23,17 @@ export class Analyzer {
   }
 
   public async checkWorkspace(
-    indicator: Indicator,
     context: vscode.ExtensionContext,
-    settings: Settings,
   ): Promise<number> {
-    if (this.isAnalysisRunning || !settings.isEnabled()) {
+    const indicator = Indicator.getInstance();
+    const settings = Settings.getInstance();
+
+    if (!settings.isEnabled()) {
+      return 0;
+    }
+
+    if (this.isAnalysisRunning) {
+      this.pendingRerun = true;
       return 0;
     }
 
@@ -34,7 +41,7 @@ export class Analyzer {
     indicator.startLoadingAnimation();
 
     try {
-      const workspaceFolders = vscode.workspace.workspaceFolders || [];
+      const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
       let totalErrors = 0;
 
       Diagnostics.clear();
@@ -90,6 +97,10 @@ export class Analyzer {
       return 0;
     } finally {
       this.isAnalysisRunning = false;
+      if (this.pendingRerun) {
+        this.pendingRerun = false;
+        void this.checkWorkspace(context);
+      }
     }
   }
 }

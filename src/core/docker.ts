@@ -1,32 +1,51 @@
-import { exec as execCallback, spawn } from "child_process";
+import { spawn } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { promisify } from "util";
 import * as vscode from "vscode";
 import {
   CACHE_DURATION_MS,
   DELIVERY_MOUNT_DIR,
   DOCKER_CACHE_KEY,
   DOCKER_IMAGE,
+  DOCKER_PULL_TIMEOUT_MS,
+  DOCKER_RUN_TIMEOUT_MS,
   LOG_DIR,
   REPORT_MOUNT_DIR,
   getLogPath,
 } from "../utils/constants";
 import { Debugger } from "../utils/debugger";
 
-const exec = promisify(execCallback);
+function runDocker(args: string[], timeoutMs: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("docker", args, { windowsHide: true });
+
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(new Error(`docker ${args[0]} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(new Error(`docker ${args[0]} failed to start: ${error.message}`));
+    });
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(`docker ${args[0]} exited ${code}: ${stderr}`));
+        return;
+      }
+      resolve();
+    });
+  });
+}
 
 export class Docker {
-  private static async pruneDockerImages(): Promise<void> {
-    try {
-      await exec("docker image prune -f");
-    } catch (error: any) {
-      Debugger.error("Docker", "Prune failed", {
-        error: error.message || error,
-      });
-    }
-  }
-
   private static async pullDockerImage(
     context: vscode.ExtensionContext,
   ): Promise<void> {
@@ -37,30 +56,8 @@ export class Docker {
       return;
     }
 
-    return new Promise<void>((resolve, reject) => {
-      const pullProcess = spawn("docker", ["pull", DOCKER_IMAGE], {
-        shell: true,
-      });
-      let errorOutput = "";
-
-      pullProcess.stderr.on("data", (data) => {
-        errorOutput += data.toString();
-      });
-
-      pullProcess.on("close", async (code) => {
-        if (code !== 0) {
-          reject(new Error(`Failed to pull image: ${errorOutput}`));
-        } else {
-          context.globalState.update(DOCKER_CACHE_KEY, now);
-          await this.pruneDockerImages();
-          resolve();
-        }
-      });
-
-      pullProcess.on("error", (error) => {
-        reject(new Error(`Failed to execute pull: ${error.message}`));
-      });
-    });
+    await runDocker(["pull", DOCKER_IMAGE], DOCKER_PULL_TIMEOUT_MS);
+    await context.globalState.update(DOCKER_CACHE_KEY, now);
   }
 
   public static async executeCheck(
@@ -89,45 +86,22 @@ export class Docker {
       });
     }
 
-    return new Promise<string>((resolve, reject) => {
-      const escapedWorkspacePath = `"${workspacePath.replace(/"/g, '\\"')}"`;
-      const escapedReportPath = `"${path
-        .dirname(reportPath)
-        .replace(/"/g, '\\"')}"`;
-
-      const args = [
+    await runDocker(
+      [
         "run",
         "--rm",
         "-i",
         "-v",
-        `${escapedWorkspacePath}:${DELIVERY_MOUNT_DIR}`,
+        `${workspacePath}:${DELIVERY_MOUNT_DIR}`,
         "-v",
-        `${escapedReportPath}:${REPORT_MOUNT_DIR}`,
+        `${path.dirname(reportPath)}:${REPORT_MOUNT_DIR}`,
         DOCKER_IMAGE,
         DELIVERY_MOUNT_DIR,
         REPORT_MOUNT_DIR,
-      ];
+      ],
+      DOCKER_RUN_TIMEOUT_MS,
+    );
 
-      const containerProcess = spawn("docker", args, {
-        shell: true,
-        windowsHide: true,
-      });
-      let errorOutput = "";
-
-      containerProcess.stderr.on("data", (data) => {
-        errorOutput += data.toString();
-      });
-
-      containerProcess.on("close", (code) => {
-        if (code !== 0) {
-          reject(new Error(`Container execution failed: ${errorOutput}`));
-        }
-        resolve(reportPath);
-      });
-
-      containerProcess.on("error", (error) => {
-        reject(new Error(`Container execution error: ${error.message}`));
-      });
-    });
+    return reportPath;
   }
 }

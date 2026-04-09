@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "epistyle",
+      "dependencies": {
+        "ignore": "^7.0.5",
+      },
       "devDependencies": {
         "@types/mocha": "^10.0.10",
         "@types/node": "^25.5.2",
