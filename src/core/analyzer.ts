@@ -10,25 +10,20 @@ import { Indicator } from "./indicator";
 import { Parser } from "./parser";
 import { Settings } from "./settings";
 
-
 export class Analyzer {
   private static instance: Analyzer;
   private isAnalysisRunning: boolean = false;
 
-
   public static getInstance(): Analyzer {
-    if (!Analyzer.instance)
-      Analyzer.instance = new Analyzer();
+    if (!Analyzer.instance) Analyzer.instance = new Analyzer();
     return Analyzer.instance;
   }
-
 
   public async checkWorkspace(
     indicator: Indicator,
     context: vscode.ExtensionContext,
-    settings: Settings
+    settings: Settings,
   ): Promise<number> {
-
     if (this.isAnalysisRunning || !settings.isEnabled()) return 0;
 
     this.isAnalysisRunning = true;
@@ -60,12 +55,15 @@ export class Analyzer {
         const reportPath = getLogPath(projectRoot);
         if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath);
 
-        const newReportPath = await Docker.executeCheck(context, workspaceFolder);
+        const newReportPath = await Docker.executeCheck(
+          context,
+          workspaceFolder,
+        );
         const fileErrorsMap = Parser.parseReport(newReportPath, projectRoot);
 
         totalErrors += Object.values(fileErrorsMap).reduce(
           (sum, errors: IErrorCode[]) => sum + errors.length,
-          0
+          0,
         );
 
         Object.entries(fileErrorsMap).forEach(([filePath, errors]) => {

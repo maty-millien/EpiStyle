@@ -6,22 +6,19 @@ export class Indicator {
   private indicatorItem: vscode.StatusBarItem;
   private loadingInterval: NodeJS.Timeout | undefined;
 
-
   private constructor() {
     this.indicatorItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
-      100
+      100,
     );
     this.indicatorItem.name = "Epitech Coding Style Checker";
     this.indicatorItem.show();
   }
 
-
   public static getInstance(): Indicator {
     if (!Indicator.instance) Indicator.instance = new Indicator();
     return Indicator.instance;
   }
-
 
   public startLoadingAnimation() {
     if (this.loadingInterval) return;
@@ -31,7 +28,6 @@ export class Indicator {
     this.indicatorItem.text = `$(loading~spin) Checking Coding Style`;
   }
 
-
   public stopLoadingAnimation() {
     if (this.loadingInterval) {
       clearInterval(this.loadingInterval);
@@ -39,14 +35,21 @@ export class Indicator {
     }
   }
 
-
-  public updateStatus(errorCount: number, isEnabled?: boolean, message?: string) {
+  public updateStatus(
+    errorCount: number,
+    isEnabled?: boolean,
+    message?: string,
+  ) {
     this.stopLoadingAnimation();
     const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    const currentEnabledState = isEnabled !== undefined ? isEnabled : (config.get<boolean>("enable") ?? true);
+    const currentEnabledState =
+      isEnabled !== undefined
+        ? isEnabled
+        : (config.get<boolean>("enable") ?? true);
 
     if (!currentEnabledState) {
-      this.indicatorItem.text = message || `$(debug-disconnect) Coding Style Checker Off`;
+      this.indicatorItem.text =
+        message || `$(debug-disconnect) Coding Style Checker Off`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
       return;
@@ -57,32 +60,31 @@ export class Indicator {
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
     } else {
-      this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${errorCount > 1 ? "s" : ""
-        }`;
+      this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${
+        errorCount > 1 ? "s" : ""
+      }`;
       this.indicatorItem.backgroundColor = new vscode.ThemeColor(
-        "statusBarItem.warningBackground"
+        "statusBarItem.warningBackground",
       );
       this.indicatorItem.color = new vscode.ThemeColor(
-        "statusBarItem.warningForeground"
+        "statusBarItem.warningForeground",
       );
     }
   }
-
 
   public dispose() {
     this.stopLoadingAnimation();
     this.indicatorItem.dispose();
   }
 
-
   public registerCommand(
     context: vscode.ExtensionContext,
-    command: () => Promise<void>
+    command: () => Promise<void>,
   ) {
     context.subscriptions.push(this.indicatorItem);
     this.indicatorItem.command = TOGGLE_COMMAND;
     context.subscriptions.push(
-      vscode.commands.registerCommand(TOGGLE_COMMAND, command)
+      vscode.commands.registerCommand(TOGGLE_COMMAND, command),
     );
   }
 }
