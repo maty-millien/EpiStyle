@@ -58,6 +58,14 @@
           "type": "boolean",
           "default": false,
           "description": "Keep the .vscode/coding-style-reports.log file after analysis. If disabled, the file is deleted as soon as the analysis finishes."
+        },
+        "epitech-coding-style.excludePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["tests/"],
+          "description": "Gitignore-style patterns to exclude from analysis. Applied in addition to the workspace .gitignore."
         }
       }
     }

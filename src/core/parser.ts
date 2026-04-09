@@ -10,6 +10,7 @@ export class Parser {
   public static parseReport(
     reportPath: string,
     workspacePath: string,
+    excludePaths: string[],
   ): IFileErrors {
     const fileErrors: IFileErrors = {};
     if (!fs.existsSync(reportPath)) {
@@ -17,7 +18,7 @@ export class Parser {
       return fileErrors;
     }
 
-    const gitignore = this.loadGitignore(workspacePath);
+    const matcher = this.buildIgnore(workspacePath, excludePaths);
     const reportContent = fs.readFileSync(reportPath, "utf-8");
     const lines = reportContent.split(/\r?\n/);
 
@@ -48,11 +49,7 @@ export class Parser {
         continue;
       }
 
-      if (this.isTestFile(relativeFilePath)) {
-        continue;
-      }
-
-      if (gitignore && gitignore.ignores(relativeFilePath)) {
+      if (matcher.ignores(relativeFilePath)) {
         continue;
       }
 
@@ -70,21 +67,25 @@ export class Parser {
     return fileErrors;
   }
 
-  private static loadGitignore(workspacePath: string): Ignore | null {
-    const gitignorePath = path.join(workspacePath, ".gitignore");
-    if (!fs.existsSync(gitignorePath)) {
-      return null;
-    }
-    try {
-      const contents = fs.readFileSync(gitignorePath, "utf-8");
-      return ignore().add(contents);
-    } catch (error) {
-      Debugger.warn("Parser", "Failed to read .gitignore", { error });
-      return null;
-    }
-  }
+  private static buildIgnore(
+    workspacePath: string,
+    excludePaths: string[],
+  ): Ignore {
+    const matcher = ignore();
 
-  private static isTestFile(filePath: string): boolean {
-    return filePath.startsWith("tests/") || filePath.includes("/tests/");
+    if (excludePaths.length > 0) {
+      matcher.add(excludePaths);
+    }
+
+    const gitignorePath = path.join(workspacePath, ".gitignore");
+    if (fs.existsSync(gitignorePath)) {
+      try {
+        matcher.add(fs.readFileSync(gitignorePath, "utf-8"));
+      } catch (error) {
+        Debugger.warn("Parser", "Failed to read .gitignore", { error });
+      }
+    }
+
+    return matcher;
   }
 }
