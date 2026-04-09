@@ -53,6 +53,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable/disable the real-time coding style checker."
+        },
+        "epitech-coding-style.persistLogFile": {
+          "type": "boolean",
+          "default": false,
+          "description": "Keep the .vscode/coding-style-reports.log file after analysis. If disabled, the file is deleted as soon as the analysis finishes."
         }
       }
     }
