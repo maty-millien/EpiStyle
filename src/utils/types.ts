@@ -1,18 +1,6 @@
-/*
-
-Debug details interface::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
 export interface IDebugDetails {
   [key: string]: unknown;
 }
-
-/*
-
-Error code interface::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
 export interface IErrorCode {
   line: number;
@@ -21,20 +9,8 @@ export interface IErrorCode {
   message: string;
 }
 
-/*
-
-File errors interface::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
 export interface IFileErrors {
   [filePath: string]: IErrorCode[];
 }
-
-/*
-
-Error severity type::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
 export type ErrorSeverity = "MAJOR" | "MINOR" | "INFO";

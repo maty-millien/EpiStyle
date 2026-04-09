@@ -1,20 +1,8 @@
 import * as vscode from "vscode";
 import { IDebugDetails } from "./types";
 
-/*
-
-Debugger class definition and static channel initialization :::::::::::::::::::::::::::::::::::::::::
-
-*/
-
 export class Debugger {
   private static channel: vscode.LogOutputChannel | null = null;
-
-  /*
-
-Output channel initialization method :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
   public static initialize(): void {
     if (!this.channel) {
@@ -24,12 +12,6 @@ Output channel initialization method :::::::::::::::::::::::::::::::::::::::::::
       );
     }
   }
-
-  /*
-
-Core logging method handling different log levels ::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
   private static log(
     level: "INFO" | "WARN" | "ERROR",
@@ -60,12 +42,6 @@ Core logging method handling different log levels ::::::::::::::::::::::::::::::
     }
   }
 
-  /*
-
-Public method for info level logging ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
   public static info(
     component: string,
     action: string,
@@ -74,12 +50,6 @@ Public method for info level logging :::::::::::::::::::::::::::::::::::::::::::
     this.log("INFO", component, action, details);
   }
 
-  /*
-
-Public method for warn level logging ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
-
   public static warn(
     component: string,
     action: string,
@@ -87,12 +57,6 @@ Public method for warn level logging :::::::::::::::::::::::::::::::::::::::::::
   ): void {
     this.log("WARN", component, action, details);
   }
-
-  /*
-
-Public method for error level logging :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
 
   public static error(
     component: string,

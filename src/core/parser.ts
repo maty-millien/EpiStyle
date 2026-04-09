@@ -3,11 +3,6 @@ import * as path from "path";
 import { Debugger } from "../utils/debugger";
 import { ErrorSeverity, IFileErrors } from "../utils/types";
 
-/*
-
-Parse report file to extract errors, skipping test/ignored files :::::::::::::::::::::::::::
-
-*/
 export class Parser {
   public static parseReport(
     reportPath: string,
@@ -19,11 +14,6 @@ export class Parser {
       return fileErrors;
     }
 
-    /*
-
-Load and process .gitignore patterns ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
     const gitignorePath = path.join(workspacePath, ".gitignore");
     const gitignorePatterns = fs.existsSync(gitignorePath)
       ? fs
@@ -32,19 +22,9 @@ Load and process .gitignore patterns :::::::::::::::::::::::::::::::::::::::::::
           .filter((line) => line && !line.startsWith("#"))
       : [];
 
-    /*
-
-Read and split report content into lines ::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
     const reportContent = fs.readFileSync(reportPath, "utf-8");
     const lines = reportContent.split(/\r?\n/).filter(Boolean);
 
-    /*
-
-Process each line to extract error information ::::::::::::::::::::::::::::::::::::::::::::::
-
-*/
     for (const line of lines) {
       try {
         const parts = line.split(":");
@@ -80,20 +60,10 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
     return fileErrors;
   }
 
-  /*
-
-Check if file is a test file based on path patterns ::::::::::::::::::::::::::::::::::::::::
-
-*/
   private static isTestFile(filePath: string): boolean {
     return filePath.startsWith("tests/") || filePath.includes("/tests/");
   }
 
-  /*
-
-Check if file matches any .gitignore pattern using regex matching ::::::::::::::::::::::::::
-
-*/
   private static isFileIgnored(
     filePath: string,
     gitignorePatterns: string[],
