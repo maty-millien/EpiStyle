@@ -12,15 +12,26 @@ export class Parser {
     workspacePath: string,
     excludePaths: string[],
   ): IFileErrors {
-    const fileErrors: IFileErrors = {};
     if (!fs.existsSync(reportPath)) {
       Debugger.warn("Parser", "Report file not found", { reportPath });
+      return {};
+    }
+    const content = fs.readFileSync(reportPath, "utf-8");
+    return this.parseReportContent(content, workspacePath, excludePaths);
+  }
+
+  public static parseReportContent(
+    content: string,
+    workspacePath: string,
+    excludePaths: string[],
+  ): IFileErrors {
+    const fileErrors: IFileErrors = {};
+    if (!content) {
       return fileErrors;
     }
 
     const matcher = this.buildIgnore(workspacePath, excludePaths);
-    const reportContent = fs.readFileSync(reportPath, "utf-8");
-    const lines = reportContent.split(/\r?\n/);
+    const lines = content.split(/\r?\n/);
 
     for (const rawLine of lines) {
       const line = rawLine.trim();

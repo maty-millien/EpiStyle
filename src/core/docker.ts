@@ -17,6 +17,7 @@ import {
   DOCKER_STOP_TIMEOUT_MS,
   LOG_DIR,
   REPORT_MOUNT_DIR,
+  VERA_PROFILE,
   getLogPath,
 } from "../utils/constants";
 import { Debugger } from "../utils/debugger";
@@ -26,7 +27,16 @@ interface DockerResult {
   stderr: string;
 }
 
-function runDocker(args: string[], timeoutMs: number): Promise<DockerResult> {
+interface DockerRawResult {
+  stdout: string;
+  stderr: string;
+  code: number;
+}
+
+function runDockerRaw(
+  args: string[],
+  timeoutMs: number,
+): Promise<DockerRawResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("docker", args, { windowsHide: true });
 
@@ -52,13 +62,34 @@ function runDocker(args: string[], timeoutMs: number): Promise<DockerResult> {
 
     child.on("close", (code) => {
       clearTimeout(timer);
-      if (code !== 0) {
-        reject(new Error(`docker ${args[0]} exited ${code}: ${stderr}`));
-        return;
-      }
-      resolve({ stdout, stderr });
+      resolve({ stdout, stderr, code: code ?? 0 });
     });
   });
+}
+
+async function runDocker(
+  args: string[],
+  timeoutMs: number,
+): Promise<DockerResult> {
+  const result = await runDockerRaw(args, timeoutMs);
+  if (result.code !== 0) {
+    throw new Error(
+      `docker ${args[0]} exited ${result.code}: ${result.stderr}`,
+    );
+  }
+  return { stdout: result.stdout, stderr: result.stderr };
+}
+
+function isContainerGoneMessage(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("no such container") ||
+    lower.includes("is not running") ||
+    lower.includes("is not restarting") ||
+    lower.includes("container not running") ||
+    lower.includes("can not connect to") ||
+    lower.includes("container is not paused")
+  );
 }
 
 interface ContainerHandle {
@@ -271,9 +302,11 @@ export class Docker {
         "--name",
         name,
         "-v",
-        `${workspacePath}:${DELIVERY_MOUNT_DIR}`,
+        `${workspacePath}:${DELIVERY_MOUNT_DIR}:ro`,
         "-v",
         `${logDirPath}:${REPORT_MOUNT_DIR}`,
+        "--workdir",
+        DELIVERY_MOUNT_DIR,
         "--entrypoint",
         "tail",
         DOCKER_IMAGE,
@@ -325,7 +358,6 @@ export class Docker {
   }
 
   public async executeCheck(
-    context: vscode.ExtensionContext,
     workspaceFolder?: vscode.WorkspaceFolder,
   ): Promise<string> {
     await this.waitForReady();
@@ -340,48 +372,100 @@ export class Docker {
       throw new Error("No workspace folder found");
     }
 
-    const workspacePath = activeFolder.uri.fsPath;
-    const reportPath = getLogPath(workspacePath);
-
-    let handle = this.containers.get(workspacePath);
-    if (!handle) {
-      handle = await this.startContainer(activeFolder);
-    } else if (!(await this.isContainerRunning(handle.name))) {
-      Debugger.warn("Docker", "Container not running, restarting", {
-        name: handle.name,
-      });
-      this.containers.delete(workspacePath);
-      handle = await this.startContainer(activeFolder);
-    }
-
     if (!this.entrypointCmd) {
       throw new Error("Docker entrypoint not discovered");
     }
 
-    await runDocker(
-      [
-        "exec",
-        handle.name,
-        ...this.entrypointCmd,
-        DELIVERY_MOUNT_DIR,
-        REPORT_MOUNT_DIR,
-      ],
+    const reportPath = getLogPath(activeFolder.uri.fsPath);
+
+    const result = await this.execWithRetry(
+      activeFolder,
+      [...this.entrypointCmd, DELIVERY_MOUNT_DIR, REPORT_MOUNT_DIR],
       DOCKER_EXEC_TIMEOUT_MS,
     );
+
+    if (result.code !== 0) {
+      throw new Error(
+        `docker exec exited ${result.code}: ${result.stderr || result.stdout}`,
+      );
+    }
 
     return reportPath;
   }
 
-  private async isContainerRunning(name: string): Promise<boolean> {
-    try {
-      const { stdout } = await runDocker(
-        ["inspect", "-f", "{{.State.Running}}", name],
-        DOCKER_INSPECT_TIMEOUT_MS,
+  public async executeCheckFile(
+    workspaceFolder: vscode.WorkspaceFolder,
+    relativePath: string,
+  ): Promise<string> {
+    await this.waitForReady();
+
+    if (!this.available) {
+      throw new Error("Docker is not available");
+    }
+
+    // vera++ is invoked with a workspace-relative path because the container
+    // workdir is set to DELIVERY_MOUNT_DIR. That makes the emitted paths match
+    // the relative format the parser already expects.
+    const normalized = relativePath.split(path.sep).join("/");
+    const target = normalized.startsWith("./") ? normalized : `./${normalized}`;
+
+    const result = await this.execWithRetry(
+      workspaceFolder,
+      ["vera++", "--profile", VERA_PROFILE, "-d", target],
+      DOCKER_EXEC_TIMEOUT_MS,
+    );
+
+    // vera++ may exit non-zero when violations are found; tolerate that as long
+    // as we have output. Only treat it as a hard error if stdout is empty and
+    // stderr looks like a real failure.
+    if (result.code !== 0 && result.stdout.length === 0) {
+      throw new Error(
+        `vera++ exited ${result.code}: ${result.stderr || "no output"}`,
       );
-      return stdout.trim() === "true";
-    } catch {
+    }
+
+    return result.stdout;
+  }
+
+  private async execWithRetry(
+    workspaceFolder: vscode.WorkspaceFolder,
+    command: string[],
+    timeoutMs: number,
+  ): Promise<DockerRawResult> {
+    const handle = await this.ensureContainer(workspaceFolder);
+    const first = await runDockerRaw(
+      ["exec", handle.name, ...command],
+      timeoutMs,
+    );
+
+    if (!this.looksLikeContainerGone(first)) {
+      return first;
+    }
+
+    Debugger.warn("Docker", "Container gone, restarting and retrying", {
+      name: handle.name,
+      stderr: first.stderr,
+    });
+    this.containers.delete(workspaceFolder.uri.fsPath);
+    const fresh = await this.startContainer(workspaceFolder);
+    return runDockerRaw(["exec", fresh.name, ...command], timeoutMs);
+  }
+
+  private async ensureContainer(
+    workspaceFolder: vscode.WorkspaceFolder,
+  ): Promise<ContainerHandle> {
+    const existing = this.containers.get(workspaceFolder.uri.fsPath);
+    if (existing) {
+      return existing;
+    }
+    return this.startContainer(workspaceFolder);
+  }
+
+  private looksLikeContainerGone(result: DockerRawResult): boolean {
+    if (result.code === 0) {
       return false;
     }
+    return isContainerGoneMessage(result.stderr);
   }
 
   private buildContainerName(workspacePath: string): string {

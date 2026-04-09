@@ -8,10 +8,7 @@ import { RESTART_CONTAINERS_COMMAND } from "./utils/constants";
 
 let saveDisposable: vscode.Disposable | undefined;
 
-function setupAnalysisOnSave(
-  context: vscode.ExtensionContext,
-  isEnabled: boolean,
-): void {
+function setupAnalysisOnSave(isEnabled: boolean): void {
   if (saveDisposable) {
     saveDisposable.dispose();
     saveDisposable = undefined;
@@ -22,8 +19,8 @@ function setupAnalysisOnSave(
   }
 
   const analyzer = Analyzer.getInstance();
-  saveDisposable = vscode.workspace.onDidSaveTextDocument(() => {
-    void analyzer.checkWorkspace(context);
+  saveDisposable = vscode.workspace.onDidSaveTextDocument((doc) => {
+    analyzer.scheduleFile(doc.uri);
   });
 }
 
@@ -69,7 +66,7 @@ function startDockerInBackground(context: vscode.ExtensionContext): void {
     .then(() => {
       const settings = Settings.getInstance();
       if (settings.isEnabled()) {
-        void Analyzer.getInstance().checkWorkspace(context);
+        Analyzer.getInstance().scheduleWorkspace();
       } else {
         indicator.updateStatus(0, false);
       }
@@ -79,19 +76,34 @@ function startDockerInBackground(context: vscode.ExtensionContext): void {
     });
 }
 
+function isRelevantFile(uri: vscode.Uri): boolean {
+  const base = uri.path.split("/").pop() ?? "";
+  if (base === "Makefile") {
+    return true;
+  }
+  const dot = base.lastIndexOf(".");
+  if (dot < 0) {
+    return false;
+  }
+  const ext = base.slice(dot).toLowerCase();
+  return ext === ".c" || ext === ".h";
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   const settings = Settings.getInstance();
   const indicator = Indicator.getInstance();
+  const analyzer = Analyzer.getInstance();
 
   Diagnostics.init(context);
+  analyzer.init(context);
   indicator.register(context);
   indicator.registerToggleCommand(context, toggleEnabledState);
 
   context.subscriptions.push(
     settings.registerSettingsChangeHandler((enabled) => {
-      setupAnalysisOnSave(context, enabled);
+      setupAnalysisOnSave(enabled);
       if (enabled) {
-        void Analyzer.getInstance().checkWorkspace(context);
+        analyzer.scheduleWorkspace();
       } else {
         Diagnostics.clear();
         indicator.updateStatus(0, false);
@@ -119,18 +131,61 @@ export function activate(context: vscode.ExtensionContext): void {
           );
         }
       }
+      analyzer.invalidateProjectCache();
+      analyzer.scheduleWorkspace();
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidCreateFiles((event) => {
+      if (!event.files.some(isRelevantFile)) {
+        return;
+      }
+      analyzer.invalidateProjectCache();
+      analyzer.scheduleWorkspace();
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidDeleteFiles((event) => {
+      if (!event.files.some(isRelevantFile)) {
+        return;
+      }
+      for (const uri of event.files) {
+        analyzer.clearFile(uri);
+      }
+      analyzer.invalidateProjectCache();
+      analyzer.scheduleWorkspace();
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidRenameFiles((event) => {
+      const touched = event.files.some(
+        ({ oldUri, newUri }) =>
+          isRelevantFile(oldUri) || isRelevantFile(newUri),
+      );
+      if (!touched) {
+        return;
+      }
+      for (const { oldUri } of event.files) {
+        analyzer.clearFile(oldUri);
+      }
+      analyzer.invalidateProjectCache();
+      analyzer.scheduleWorkspace();
     }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(RESTART_CONTAINERS_COMMAND, async () => {
       indicator.startLoadingAnimation();
+      analyzer.invalidateProjectCache();
       await Docker.getInstance().stopAll();
       startDockerInBackground(context);
     }),
   );
 
-  setupAnalysisOnSave(context, settings.isEnabled());
+  setupAnalysisOnSave(settings.isEnabled());
   startDockerInBackground(context);
 }
 

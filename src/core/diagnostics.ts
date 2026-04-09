@@ -55,6 +55,10 @@ export class Diagnostics {
     this.collection.set(uri, diagnostics);
   }
 
+  public static delete(uri: vscode.Uri): void {
+    this.collection?.delete(uri);
+  }
+
   public static clear(): void {
     this.collection?.clear();
   }
