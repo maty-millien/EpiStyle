@@ -24,7 +24,7 @@
     "clean": "rm -f *.vsix && rm -rf out",
     "compile": "bun install && bun run build",
     "test": "bun run clean && bun run compile && code --extensionDevelopmentPath=$PWD",
-    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\" \"*.{json,md}\"",
+    "format": "eslint --fix \"src/**/*.ts\" \"scripts/**/*.ts\" && prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\" \"*.{json,md,js,mjs,cjs,ts,yml,yaml}\"",
     "release": "bun run scripts/release.ts"
   },
   "categories": [

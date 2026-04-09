@@ -15,7 +15,9 @@ export class Analyzer {
   private isAnalysisRunning: boolean = false;
 
   public static getInstance(): Analyzer {
-    if (!Analyzer.instance) Analyzer.instance = new Analyzer();
+    if (!Analyzer.instance) {
+      Analyzer.instance = new Analyzer();
+    }
     return Analyzer.instance;
   }
 
@@ -24,7 +26,9 @@ export class Analyzer {
     context: vscode.ExtensionContext,
     settings: Settings,
   ): Promise<number> {
-    if (this.isAnalysisRunning || !settings.isEnabled()) return 0;
+    if (this.isAnalysisRunning || !settings.isEnabled()) {
+      return 0;
+    }
 
     this.isAnalysisRunning = true;
     indicator.startLoadingAnimation();
@@ -53,7 +57,9 @@ export class Analyzer {
         const projectRoot = workspaceFolder.uri.fsPath;
 
         const reportPath = getLogPath(projectRoot);
-        if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath);
+        if (fs.existsSync(reportPath)) {
+          fs.unlinkSync(reportPath);
+        }
 
         const newReportPath = await Docker.executeCheck(
           context,
@@ -61,8 +67,9 @@ export class Analyzer {
         );
         const fileErrorsMap = Parser.parseReport(newReportPath, projectRoot);
 
-        if (!settings.shouldPersistLogFile() && fs.existsSync(newReportPath))
+        if (!settings.shouldPersistLogFile() && fs.existsSync(newReportPath)) {
           fs.unlinkSync(newReportPath);
+        }
 
         totalErrors += Object.values(fileErrorsMap).reduce(
           (sum, errors: IErrorCode[]) => sum + errors.length,

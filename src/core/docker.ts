@@ -56,7 +56,9 @@ export class Docker {
     const lastPull = context.globalState.get<number>(DOCKER_CACHE_KEY) ?? 0;
     const now = Date.now();
 
-    if (now - lastPull < CACHE_DURATION_MS) return;
+    if (now - lastPull < CACHE_DURATION_MS) {
+      return;
+    }
 
     /*
 
@@ -117,7 +119,9 @@ export class Docker {
     */
     const activeWorkspaceFolder =
       workspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
-    if (!activeWorkspaceFolder) throw new Error("No workspace folder found");
+    if (!activeWorkspaceFolder) {
+      throw new Error("No workspace folder found");
+    }
 
     /*
 
@@ -128,8 +132,9 @@ export class Docker {
     const logDirPath = path.join(workspacePath, LOG_DIR);
     const reportPath = getLogPath(workspacePath);
 
-    if (!fs.existsSync(logDirPath))
+    if (!fs.existsSync(logDirPath)) {
       fs.mkdirSync(logDirPath, { recursive: true });
+    }
 
     /*
 
@@ -189,8 +194,9 @@ export class Docker {
 
     */
       containerProcess.on("close", (code) => {
-        if (code !== 0)
+        if (code !== 0) {
           reject(new Error(`Container execution failed: ${errorOutput}`));
+        }
         resolve(reportPath);
       });
 

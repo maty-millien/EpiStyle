@@ -55,11 +55,17 @@ Process each line to extract error information :::::::::::::::::::::::::::::::::
           ? filePath.slice(2)
           : filePath;
 
-        if (this.isTestFile(relativeFilePath)) continue;
+        if (this.isTestFile(relativeFilePath)) {
+          continue;
+        }
 
-        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) continue;
+        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
+          continue;
+        }
 
-        if (!fileErrors[relativeFilePath]) fileErrors[relativeFilePath] = [];
+        if (!fileErrors[relativeFilePath]) {
+          fileErrors[relativeFilePath] = [];
+        }
 
         fileErrors[relativeFilePath].push({
           line: parseInt(lineNumberStr, 10) - 1,

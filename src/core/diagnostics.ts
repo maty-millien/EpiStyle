@@ -14,7 +14,9 @@ export class Diagnostics {
       INFO: vscode.DiagnosticSeverity.Information,
     };
     const level = severityMap[severity];
-    if (level !== undefined) return level;
+    if (level !== undefined) {
+      return level;
+    }
     Debugger.warn("Diagnostics", "Unknown severity level", { severity });
     return vscode.DiagnosticSeverity.Hint;
   }

@@ -21,7 +21,9 @@ export async function hasCFile(directory: string): Promise<boolean> {
 
       if (entry.isDirectory()) {
         const found = await searchDirectory(fullPath);
-        if (found) return true;
+        if (found) {
+          return true;
+        }
       }
     }
     return false;

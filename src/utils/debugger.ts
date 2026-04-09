@@ -37,7 +37,9 @@ Core logging method handling different log levels ::::::::::::::::::::::::::::::
     action: string,
     details?: IDebugDetails,
   ): void {
-    if (!this.channel) this.initialize();
+    if (!this.channel) {
+      this.initialize();
+    }
     const channel = this.channel!;
 
     const message = `[${component}] ${action}`;
@@ -53,7 +55,9 @@ Core logging method handling different log levels ::::::::::::::::::::::::::::::
         break;
     }
 
-    if (details) channel.appendLine(JSON.stringify(details, null, 2));
+    if (details) {
+      channel.appendLine(JSON.stringify(details, null, 2));
+    }
   }
 
   /*

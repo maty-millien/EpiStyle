@@ -16,12 +16,16 @@ export class Indicator {
   }
 
   public static getInstance(): Indicator {
-    if (!Indicator.instance) Indicator.instance = new Indicator();
+    if (!Indicator.instance) {
+      Indicator.instance = new Indicator();
+    }
     return Indicator.instance;
   }
 
   public startLoadingAnimation() {
-    if (this.loadingInterval) return;
+    if (this.loadingInterval) {
+      return;
+    }
 
     this.indicatorItem.backgroundColor = undefined;
     this.indicatorItem.color = undefined;
