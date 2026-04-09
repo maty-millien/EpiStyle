@@ -4,8 +4,16 @@ import { Debugger } from "../utils/debugger";
 import { IErrorCode } from "../utils/types";
 
 export class Diagnostics {
-  private static readonly collection: vscode.DiagnosticCollection =
-    vscode.languages.createDiagnosticCollection("coding-style");
+  private static collection: vscode.DiagnosticCollection | undefined;
+
+  public static init(context: vscode.ExtensionContext): void {
+    if (this.collection) {
+      return;
+    }
+    this.collection =
+      vscode.languages.createDiagnosticCollection("coding-style");
+    context.subscriptions.push(this.collection);
+  }
 
   private static getSeverityLevel(severity: string): vscode.DiagnosticSeverity {
     const severityMap: Record<string, vscode.DiagnosticSeverity> = {
@@ -40,23 +48,14 @@ export class Diagnostics {
   }
 
   public static update(uri: vscode.Uri, errors: IErrorCode[]): void {
+    if (!this.collection) {
+      return;
+    }
     const diagnostics = errors.map((error) => this.create(error));
     this.collection.set(uri, diagnostics);
   }
 
   public static clear(): void {
-    this.collection.clear();
-  }
-
-  public static getTotalErrors(): number {
-    let total = 0;
-    this.collection.forEach((uri, diagnostics) => {
-      total += diagnostics.length;
-    });
-    return total;
-  }
-
-  public static dispose(): void {
-    this.collection.dispose();
+    this.collection?.clear();
   }
 }

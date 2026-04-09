@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
-import { CONFIG_SECTION, TOGGLE_COMMAND } from "../utils/constants";
+import { TOGGLE_COMMAND } from "../utils/constants";
 
 export class Indicator {
   private static instance: Indicator;
   private indicatorItem: vscode.StatusBarItem;
-  private loadingInterval: NodeJS.Timeout | undefined;
 
   private constructor() {
     this.indicatorItem = vscode.window.createStatusBarItem(
@@ -12,6 +11,7 @@ export class Indicator {
       100,
     );
     this.indicatorItem.name = "Epitech Coding Style Checker";
+    this.indicatorItem.command = TOGGLE_COMMAND;
     this.indicatorItem.show();
   }
 
@@ -22,38 +22,33 @@ export class Indicator {
     return Indicator.instance;
   }
 
-  public startLoadingAnimation() {
-    if (this.loadingInterval) {
-      return;
-    }
+  public register(context: vscode.ExtensionContext): void {
+    context.subscriptions.push(this.indicatorItem);
+  }
 
+  public registerToggleCommand(
+    context: vscode.ExtensionContext,
+    handler: () => Promise<void>,
+  ): void {
+    context.subscriptions.push(
+      vscode.commands.registerCommand(TOGGLE_COMMAND, handler),
+    );
+  }
+
+  public startLoadingAnimation(): void {
     this.indicatorItem.backgroundColor = undefined;
     this.indicatorItem.color = undefined;
     this.indicatorItem.text = `$(loading~spin) Checking Coding Style`;
   }
 
-  public stopLoadingAnimation() {
-    if (this.loadingInterval) {
-      clearInterval(this.loadingInterval);
-      this.loadingInterval = undefined;
-    }
-  }
-
   public updateStatus(
     errorCount: number,
-    isEnabled?: boolean,
+    isEnabled: boolean,
     message?: string,
-  ) {
-    this.stopLoadingAnimation();
-    const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    const currentEnabledState =
-      isEnabled !== undefined
-        ? isEnabled
-        : (config.get<boolean>("enable") ?? true);
-
-    if (!currentEnabledState) {
+  ): void {
+    if (!isEnabled) {
       this.indicatorItem.text =
-        message || `$(debug-disconnect) Coding Style Checker Off`;
+        message ?? `$(debug-disconnect) Coding Style Checker Off`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
       return;
@@ -63,32 +58,21 @@ export class Indicator {
       this.indicatorItem.text = `$(check) No Coding Style Errors`;
       this.indicatorItem.backgroundColor = undefined;
       this.indicatorItem.color = undefined;
-    } else {
-      this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${
-        errorCount > 1 ? "s" : ""
-      }`;
-      this.indicatorItem.backgroundColor = new vscode.ThemeColor(
-        "statusBarItem.warningBackground",
-      );
-      this.indicatorItem.color = new vscode.ThemeColor(
-        "statusBarItem.warningForeground",
-      );
+      return;
     }
-  }
 
-  public dispose() {
-    this.stopLoadingAnimation();
-    this.indicatorItem.dispose();
-  }
-
-  public registerCommand(
-    context: vscode.ExtensionContext,
-    command: () => Promise<void>,
-  ) {
-    context.subscriptions.push(this.indicatorItem);
-    this.indicatorItem.command = TOGGLE_COMMAND;
-    context.subscriptions.push(
-      vscode.commands.registerCommand(TOGGLE_COMMAND, command),
+    this.indicatorItem.text = `$(alert) ${errorCount} Coding Style Error${
+      errorCount > 1 ? "s" : ""
+    }`;
+    this.indicatorItem.backgroundColor = new vscode.ThemeColor(
+      "statusBarItem.warningBackground",
     );
+    this.indicatorItem.color = new vscode.ThemeColor(
+      "statusBarItem.warningForeground",
+    );
+  }
+
+  public dispose(): void {
+    this.indicatorItem.dispose();
   }
 }

@@ -1,7 +1,10 @@
 import * as fs from "fs";
+import ignore, { Ignore } from "ignore";
 import * as path from "path";
 import { Debugger } from "../utils/debugger";
 import { ErrorSeverity, IFileErrors } from "../utils/types";
+
+const LINE_REGEX = /^(.+?):(\d+):(MAJOR|MINOR|INFO):(C-[A-Z]+\d+)\s*$/;
 
 export class Parser {
   public static parseReport(
@@ -14,67 +17,74 @@ export class Parser {
       return fileErrors;
     }
 
-    const gitignorePath = path.join(workspacePath, ".gitignore");
-    const gitignorePatterns = fs.existsSync(gitignorePath)
-      ? fs
-          .readFileSync(gitignorePath, "utf-8")
-          .split(/\r?\n/)
-          .filter((line) => line && !line.startsWith("#"))
-      : [];
-
+    const gitignore = this.loadGitignore(workspacePath);
     const reportContent = fs.readFileSync(reportPath, "utf-8");
-    const lines = reportContent.split(/\r?\n/).filter(Boolean);
+    const lines = reportContent.split(/\r?\n/);
 
-    for (const line of lines) {
-      try {
-        const parts = line.split(":");
-        const [filePath, lineNumberStr, ...rest] = parts;
-        const message = rest.join(":").trim();
-        const [severity, code] = message.split(":");
-        const relativeFilePath = filePath.startsWith("./")
-          ? filePath.slice(2)
-          : filePath;
-
-        if (this.isTestFile(relativeFilePath)) {
-          continue;
-        }
-
-        if (this.isFileIgnored(relativeFilePath, gitignorePatterns)) {
-          continue;
-        }
-
-        if (!fileErrors[relativeFilePath]) {
-          fileErrors[relativeFilePath] = [];
-        }
-
-        fileErrors[relativeFilePath].push({
-          line: parseInt(lineNumberStr, 10) - 1,
-          severity: severity as ErrorSeverity,
-          code,
-          message,
-        });
-      } catch (error) {
-        Debugger.error("Parser", "Error parsing line", { error, line });
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) {
+        continue;
       }
+
+      const match = line.match(LINE_REGEX);
+      if (!match) {
+        Debugger.warn("Parser", "Malformed report line", { line });
+        continue;
+      }
+
+      const [, filePath, lineNumberStr, severity, code] = match;
+      const lineNumber = parseInt(lineNumberStr, 10);
+      if (!Number.isFinite(lineNumber) || lineNumber < 1) {
+        Debugger.warn("Parser", "Invalid line number", { line });
+        continue;
+      }
+
+      const relativeFilePath = filePath.startsWith("./")
+        ? filePath.slice(2)
+        : filePath;
+
+      if (!relativeFilePath || relativeFilePath.startsWith("/")) {
+        continue;
+      }
+
+      if (this.isTestFile(relativeFilePath)) {
+        continue;
+      }
+
+      if (gitignore && gitignore.ignores(relativeFilePath)) {
+        continue;
+      }
+
+      if (!fileErrors[relativeFilePath]) {
+        fileErrors[relativeFilePath] = [];
+      }
+
+      fileErrors[relativeFilePath].push({
+        line: lineNumber - 1,
+        severity: severity as ErrorSeverity,
+        code,
+        message: `${severity}:${code}`,
+      });
     }
     return fileErrors;
   }
 
-  private static isTestFile(filePath: string): boolean {
-    return filePath.startsWith("tests/") || filePath.includes("/tests/");
+  private static loadGitignore(workspacePath: string): Ignore | null {
+    const gitignorePath = path.join(workspacePath, ".gitignore");
+    if (!fs.existsSync(gitignorePath)) {
+      return null;
+    }
+    try {
+      const contents = fs.readFileSync(gitignorePath, "utf-8");
+      return ignore().add(contents);
+    } catch (error) {
+      Debugger.warn("Parser", "Failed to read .gitignore", { error });
+      return null;
+    }
   }
 
-  private static isFileIgnored(
-    filePath: string,
-    gitignorePatterns: string[],
-  ): boolean {
-    return gitignorePatterns.some((pattern) => {
-      const cleanPattern = pattern.replace(/\/$/, "");
-      const regexPattern = cleanPattern
-        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-        .replace(/\\\*/g, ".*");
-
-      return new RegExp(`^${regexPattern}(?:/.*)?$`).test(filePath);
-    });
+  private static isTestFile(filePath: string): boolean {
+    return filePath.startsWith("tests/") || filePath.includes("/tests/");
   }
 }

@@ -24,7 +24,7 @@ Catch style violations as you type and ship code that passes the Epitech norm �
 
 ## Features
 
-- **Real-time analysis** — Style checks run automatically on file save and open
+- **Real-time analysis** — Style checks run automatically on file save
 - **Inline diagnostics** — Errors and warnings appear in the Problems panel and inline
 - **Detailed explanations** — Every violation comes with a clear description
 - **Customizable** — Toggle the checker on or off from settings
@@ -50,7 +50,7 @@ Make sure Docker is installed and running before launching VS Code.
 
 ## Usage
 
-Open or save any `.c`, `.h`, `.cpp`, or `Makefile` and EpiStyle takes over:
+Save any `.c`, `.h`, or `Makefile` and EpiStyle takes over:
 
 - Style violations appear in the **Problems** panel
 - Inline diagnostics highlight the offending lines
@@ -60,9 +60,10 @@ No commands to run, no flags to remember.
 
 ## Configuration
 
-| Setting                       | Default | Description                              |
-| ----------------------------- | ------- | ---------------------------------------- |
-| `epitech-coding-style.enable` | `true`  | Enable or disable real-time style checks |
+| Setting                               | Default | Description                                                     |
+| ------------------------------------- | ------- | --------------------------------------------------------------- |
+| `epitech-coding-style.enable`         | `true`  | Enable or disable real-time style checks                        |
+| `epitech-coding-style.persistLogFile` | `false` | Keep `.vscode/coding-style-reports.log` after each analysis run |
 
 Open VS Code settings (`Cmd`/`Ctrl + ,`) and search for **EpiStyle** to adjust.
 

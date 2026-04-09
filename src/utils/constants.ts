@@ -12,8 +12,6 @@ export const getLogPath = (workspaceRoot: string): string => {
   return path.join(workspaceRoot, LOG_DIR, EXPORT_FILE);
 };
 
-export const BANNED_EXTENSIONS = ["md"];
-
 export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-O1": "Repository contains compiled, temporary or unnecessary files",
   "C-O2": "Source files must only have .c or .h extensions",
@@ -64,3 +62,5 @@ export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
 export const DOCKER_IMAGE = "ghcr.io/epitech/coding-style-checker:latest";
 export const DOCKER_CACHE_KEY = "lastImagePull";
 export const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+export const DOCKER_PULL_TIMEOUT_MS = 120_000;
+export const DOCKER_RUN_TIMEOUT_MS = 60_000;
