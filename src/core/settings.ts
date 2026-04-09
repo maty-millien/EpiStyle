@@ -23,6 +23,10 @@ export class Settings {
     return this.config.get<boolean>("persistLogFile") ?? false;
   }
 
+  public getExcludePaths(): string[] {
+    return this.config.get<string[]>("excludePaths") ?? ["tests/"];
+  }
+
   public async setEnabled(enabled: boolean): Promise<void> {
     await this.config.update(
       "enable",

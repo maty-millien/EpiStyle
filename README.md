@@ -60,10 +60,11 @@ No commands to run, no flags to remember.
 
 ## Configuration
 
-| Setting                               | Default | Description                                                     |
-| ------------------------------------- | ------- | --------------------------------------------------------------- |
-| `epitech-coding-style.enable`         | `true`  | Enable or disable real-time style checks                        |
-| `epitech-coding-style.persistLogFile` | `false` | Keep `.vscode/coding-style-reports.log` after each analysis run |
+| Setting                               | Default      | Description                                                                        |
+| ------------------------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| `epitech-coding-style.enable`         | `true`       | Enable or disable real-time style checks                                           |
+| `epitech-coding-style.persistLogFile` | `false`      | Keep `.vscode/coding-style-reports.log` after each analysis run                    |
+| `epitech-coding-style.excludePaths`   | `["tests/"]` | Gitignore-style patterns to exclude from analysis (applied on top of `.gitignore`) |
 
 Open VS Code settings (`Cmd`/`Ctrl + ,`) and search for **EpiStyle** to adjust.
 

@@ -72,7 +72,11 @@ export class Analyzer {
           context,
           workspaceFolder,
         );
-        const fileErrorsMap = Parser.parseReport(newReportPath, projectRoot);
+        const fileErrorsMap = Parser.parseReport(
+          newReportPath,
+          projectRoot,
+          settings.getExcludePaths(),
+        );
 
         if (!settings.shouldPersistLogFile() && fs.existsSync(newReportPath)) {
           fs.unlinkSync(newReportPath);
