@@ -17,7 +17,8 @@ export const BANNED_EXTENSIONS = ["md"];
 export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-O1": "Repository contains compiled, temporary or unnecessary files",
   "C-O2": "Source files must only have .c or .h extensions",
-  "C-O3": "File exceeds function limit (max 10 total, 5 non-static) or contains unrelated functions",
+  "C-O3":
+    "File exceeds function limit (max 10 total, 5 non-static) or contains unrelated functions",
   "C-O4": "File/folder naming violates snake_case convention or is ambiguous",
   "C-G1": "Missing or incorrect Epitech header",
   "C-G2": "Functions not separated by exactly one empty line",
@@ -30,7 +31,8 @@ export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-G9": "Non-trivial constant values not defined as constant/macro",
   "C-G10": "Use of inline assembly",
   "C-F1": "Function violates single responsibility principle",
-  "C-F2": "Function name does not describe action or violates naming convention",
+  "C-F2":
+    "Function name does not describe action or violates naming convention",
   "C-F3": "Line exceeds 80 columns",
   "C-F4": "Function body exceeds 20 lines",
   "C-F5": "Function has more than 4 parameters",

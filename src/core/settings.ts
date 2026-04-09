@@ -16,8 +16,7 @@ export class Settings {
   }
 
   public static getInstance(): Settings {
-    if (!Settings.instance)
-      Settings.instance = new Settings();
+    if (!Settings.instance) Settings.instance = new Settings();
     return Settings.instance;
   }
 
@@ -49,7 +48,7 @@ export class Settings {
   */
 
   public registerSettingsChangeHandler(
-    handler: (enabled: boolean) => void
+    handler: (enabled: boolean) => void,
   ): vscode.Disposable {
     return vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration(`${CONFIG_SECTION}.enable`))

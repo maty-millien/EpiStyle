@@ -15,7 +15,7 @@
     "url": "https://github.com/maty-millien/EpiStyle"
   },
   "engines": {
-    "vscode": "^1.115.0"
+    "vscode": "^1.74.0"
   },
   "scripts": {
     "build": "bun build ./src/extension.ts --outdir ./out --target node --format cjs --external vscode --sourcemap=external",
@@ -24,6 +24,7 @@
     "clean": "rm -f *.vsix && rm -rf out",
     "compile": "bun install && bun run build",
     "test": "bun run clean && bun run compile && code --extensionDevelopmentPath=$PWD",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\" \"*.{json,md}\"",
     "release": "bun run scripts/release.ts"
   },
   "categories": [
@@ -59,12 +60,13 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.2",
-    "@types/vscode": "^1.115.0",
+    "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
     "@vscode/vsce": "^3.7.1",
     "bun-types": "^1.3.11",
     "eslint": "^10.2.0",
+    "prettier": "^3.6.2",
     "typescript": "^6.0.2"
   }
 }

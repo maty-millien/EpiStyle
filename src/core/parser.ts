@@ -11,7 +11,7 @@ Parse report file to extract errors, skipping test/ignored files :::::::::::::::
 export class Parser {
   public static parseReport(
     reportPath: string,
-    workspacePath: string
+    workspacePath: string,
   ): IFileErrors {
     const fileErrors: IFileErrors = {};
     if (!fs.existsSync(reportPath)) {
@@ -90,7 +90,7 @@ Check if file matches any .gitignore pattern using regex matching ::::::::::::::
 */
   private static isFileIgnored(
     filePath: string,
-    gitignorePatterns: string[]
+    gitignorePatterns: string[],
   ): boolean {
     return gitignorePatterns.some((pattern) => {
       const cleanPattern = pattern.replace(/\/$/, "");

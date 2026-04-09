@@ -20,7 +20,7 @@ Output channel initialization method :::::::::::::::::::::::::::::::::::::::::::
     if (!this.channel) {
       this.channel = vscode.window.createOutputChannel(
         "Epitech VS Coding Style Real-Time Checker",
-        { log: true }
+        { log: true },
       );
     }
   }
@@ -35,7 +35,7 @@ Core logging method handling different log levels ::::::::::::::::::::::::::::::
     level: "INFO" | "WARN" | "ERROR",
     component: string,
     action: string,
-    details?: IDebugDetails
+    details?: IDebugDetails,
   ): void {
     if (!this.channel) this.initialize();
     const channel = this.channel!;
@@ -65,7 +65,7 @@ Public method for info level logging :::::::::::::::::::::::::::::::::::::::::::
   public static info(
     component: string,
     action: string,
-    details?: IDebugDetails
+    details?: IDebugDetails,
   ): void {
     this.log("INFO", component, action, details);
   }
@@ -79,7 +79,7 @@ Public method for warn level logging :::::::::::::::::::::::::::::::::::::::::::
   public static warn(
     component: string,
     action: string,
-    details?: IDebugDetails
+    details?: IDebugDetails,
   ): void {
     this.log("WARN", component, action, details);
   }
@@ -93,7 +93,7 @@ Public method for error level logging ::::::::::::::::::::::::::::::::::::::::::
   public static error(
     component: string,
     action: string,
-    details?: IDebugDetails
+    details?: IDebugDetails,
   ): void {
     this.log("ERROR", component, action, details);
   }

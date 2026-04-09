@@ -28,7 +28,7 @@ export class Diagnostics {
     const diagnostic = new vscode.Diagnostic(
       range,
       `${error.code} - ${description}`,
-      severity
+      severity,
     );
 
     diagnostic.source = CONFIG_SECTION;

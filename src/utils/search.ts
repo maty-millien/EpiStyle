@@ -5,12 +5,17 @@ export async function hasCFile(directory: string): Promise<boolean> {
   const cFileExtensions = [".c", ".h"];
 
   async function searchDirectory(currentPath: string): Promise<boolean> {
-    const entries = await fs.promises.readdir(currentPath, { withFileTypes: true });
+    const entries = await fs.promises.readdir(currentPath, {
+      withFileTypes: true,
+    });
 
     for (const entry of entries) {
       const fullPath = path.join(currentPath, entry.name);
 
-      if (entry.isFile() && cFileExtensions.includes(path.extname(entry.name))) {
+      if (
+        entry.isFile() &&
+        cFileExtensions.includes(path.extname(entry.name))
+      ) {
         return true;
       }
 

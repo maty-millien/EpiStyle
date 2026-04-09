@@ -33,7 +33,9 @@ export class Docker {
     try {
       await exec("docker image prune -f");
     } catch (error: any) {
-      Debugger.error("Docker", "Prune failed", { error: error.message || error });
+      Debugger.error("Docker", "Prune failed", {
+        error: error.message || error,
+      });
     }
   }
 
@@ -44,7 +46,7 @@ export class Docker {
   */
 
   private static async pullDockerImage(
-    context: vscode.ExtensionContext
+    context: vscode.ExtensionContext,
   ): Promise<void> {
     /*
 
@@ -106,7 +108,7 @@ export class Docker {
 
   public static async executeCheck(
     context: vscode.ExtensionContext,
-    workspaceFolder?: vscode.WorkspaceFolder
+    workspaceFolder?: vscode.WorkspaceFolder,
   ): Promise<string> {
     /*
 
@@ -126,7 +128,8 @@ export class Docker {
     const logDirPath = path.join(workspacePath, LOG_DIR);
     const reportPath = getLogPath(workspacePath);
 
-    if (!fs.existsSync(logDirPath)) fs.mkdirSync(logDirPath, { recursive: true });
+    if (!fs.existsSync(logDirPath))
+      fs.mkdirSync(logDirPath, { recursive: true });
 
     /*
 
@@ -186,7 +189,8 @@ export class Docker {
 
     */
       containerProcess.on("close", (code) => {
-        if (code !== 0) reject(new Error(`Container execution failed: ${errorOutput}`));
+        if (code !== 0)
+          reject(new Error(`Container execution failed: ${errorOutput}`));
         resolve(reportPath);
       });
 

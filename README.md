@@ -35,10 +35,10 @@ Catch style violations as you type and ship code that passes the Epitech norm â€
 
 ## Requirements
 
-| Dependency                                                    | Purpose                                       |
-| ------------------------------------------------------------- | --------------------------------------------- |
-| [Docker](https://www.docker.com/)                             | Runs the official Epitech style checker image |
-| [Visual Studio Code](https://code.visualstudio.com/) `1.106+` | Editor integration                            |
+| Dependency                                                   | Purpose                                       |
+| ------------------------------------------------------------ | --------------------------------------------- |
+| [Docker](https://www.docker.com/)                            | Runs the official Epitech style checker image |
+| [Visual Studio Code](https://code.visualstudio.com/) `1.74+` | Editor integration                            |
 
 Make sure Docker is installed and running before launching VS Code.
 
