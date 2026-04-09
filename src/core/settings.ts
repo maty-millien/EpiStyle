@@ -31,6 +31,11 @@ export class Settings {
     return this._config.get<boolean>("enable") ?? true;
   }
 
+  public shouldPersistLogFile(): boolean {
+    this._config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return this._config.get<boolean>("persistLogFile") ?? false;
+  }
+
   /*
 
   Updates the extension's enabled state in user settings.::::::::::::::::::::::::::::::::::::::::::

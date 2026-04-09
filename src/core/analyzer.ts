@@ -61,6 +61,9 @@ export class Analyzer {
         );
         const fileErrorsMap = Parser.parseReport(newReportPath, projectRoot);
 
+        if (!settings.shouldPersistLogFile() && fs.existsSync(newReportPath))
+          fs.unlinkSync(newReportPath);
+
         totalErrors += Object.values(fileErrorsMap).reduce(
           (sum, errors: IErrorCode[]) => sum + errors.length,
           0,
