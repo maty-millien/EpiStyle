@@ -59,6 +59,9 @@ export const ERROR_DESCRIPTIONS: { [key: string]: string } = {
   "C-A4": "Missing static keyword for internal functions/variables",
 };
 
+export const VERA_PROFILE = "epitech";
+export const FAST_PATH_EXTENSIONS = new Set([".c", ".h"]);
+
 export const DOCKER_IMAGE = "ghcr.io/epitech/coding-style-checker:latest";
 export const DOCKER_CACHE_KEY = "lastImagePull";
 export const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
