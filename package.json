@@ -64,7 +64,9 @@
           "items": {
             "type": "string"
           },
-          "default": ["tests/"],
+          "default": [
+            "tests/"
+          ],
           "description": "Gitignore-style patterns to exclude from analysis. Applied in addition to the workspace .gitignore."
         }
       }
