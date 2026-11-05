@@ -30,7 +30,7 @@ const config = defineConfig({
     outDir: "out",
     platform: "node",
     sourcemap: true,
-    deps: { neverBundle: ["vscode"], onlyBundle: ["ignore"] },
+    deps: { neverBundle: ["vscode"], onlyBundle: ["ignore", "smol-toml"] },
   },
 });
 

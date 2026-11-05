@@ -46,10 +46,10 @@ EpiStyle runs Epitech's coding style checker, [epiclang](https://launchpad.net/~
 
 EpiStyle needs [Visual Studio Code](https://code.visualstudio.com/) `1.145+` and one of these:
 
-- **epiclang installed locally.** On Ubuntu, add `ppa:epitech/ppa` and install `epiclang banana-coding-style-checker` (already there on the Epitech Ubuntu image). If `epiclang` and `banana-check-repo` are on your `PATH`, EpiStyle uses them directly.
+- **epiclang installed locally.** On Ubuntu, add `ppa:epitech/ppa` and install `epiclang banana-coding-style-checker` (already there on the Epitech Ubuntu image). If `clang-21`, `banana-check-repo` and the Banana plugin in `/usr/lib/epiclang/plugins` are present, EpiStyle uses them directly.
 - **Docker**, on macOS, Windows or any Linux. Docker Desktop, [OrbStack](https://orbstack.dev/), [Colima](https://github.com/abiosoft/colima), [Rancher Desktop](https://rancherdesktop.io/) or a native `dockerd` all work. Start it before opening VS Code.
 
-Epitech only publishes epiclang as Ubuntu amd64 packages, so with Docker, EpiStyle builds a local image (`epistyle-epiclang`, about 700 MB) from Epitech's PPA the first time it runs. This takes a few minutes, and the image is rebuilt in the background once it's more than a week old. On Apple Silicon the image runs under amd64 emulation, which is why a check takes around half a second.
+Epitech only publishes epiclang as Ubuntu amd64 packages, so with Docker, EpiStyle builds a local image (`epistyle-epiclang`, about 360 MB, holding only clang, the Banana plugin and the system headers) from Epitech's PPA the first time it runs. This takes a few minutes, and the image is rebuilt in the background once it's more than a week old. On Apple Silicon the image runs under amd64 emulation, which is why a check takes around half a second.
 
 ## Installation
 

@@ -1,7 +1,9 @@
 import { spawn } from "child_process";
 import * as crypto from "crypto";
+import * as fs from "fs";
 import * as path from "path";
 
+import { parse as parseToml } from "smol-toml";
 import * as vscode from "vscode";
 
 import { errorMessage, log } from "./config";
@@ -36,15 +38,26 @@ const IMAGE_LABEL = "epistyle.image";
 const IMAGE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const PLATFORM = "linux/amd64";
 const MOUNT_DIR = "/mnt/delivery";
-const DOCKERFILE = `FROM ubuntu:resolute
-LABEL ${IMAGE_LABEL}=1
+const CLANG = "clang-21";
+const PLUGIN_DIRS = ["/usr/lib/epiclang/plugins", "/usr/local/lib/epiclang/plugins"];
+const DOCKER_PLUGIN = `${PLUGIN_DIRS[0]}/epitech-plugin-banana.so`;
+const PLUGIN_NAME = /^\w+-plugin-(\w+)\.so$/;
+const DOTFILE = ".epiclang";
+const DOCKERFILE = `FROM ubuntu:resolute AS build
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \\
  && apt-get install -y --no-install-recommends software-properties-common gpg-agent \\
  && add-apt-repository -y ppa:epitech/ppa \\
- && apt-get install -y --no-install-recommends epiclang banana-coding-style-checker xxd libcsfml-dev libncurses-dev \\
+ && apt-get install -y --no-install-recommends banana-coding-style-checker xxd libcsfml-dev libncurses-dev \\
  && cp -rn /usr/include/CSFML/. /usr/include/SFML/ \\
- && rm -rf /var/lib/apt/lists/*
+ && test -f ${DOCKER_PLUGIN} \\
+ && mkdir /out \\
+ && cp -a --parents /usr/bin/${CLANG} /usr/lib/llvm-21/bin/clang /usr/lib/llvm-21/lib/clang ${PLUGIN_DIRS[0]} /usr/include /usr/bin/xxd /usr/bin/banana-check-repo /out \\
+ && ldd /usr/lib/llvm-21/bin/clang ${DOCKER_PLUGIN} | awk '/=>/{print $3}' | xargs realpath -s | sort -u | xargs cp -L --parents -t /out
+
+FROM ubuntu:resolute
+LABEL ${IMAGE_LABEL}=1
+COPY --from=build /out /
 `;
 
 const TIMEOUT_MS = {
@@ -66,6 +79,7 @@ interface RunResult {
 }
 
 let runtime: "native" | "docker" = "docker";
+let plugins: string[] = [];
 let ready: Promise<void> | null = null;
 const containers = new Map<string, Promise<string>>();
 
@@ -183,12 +197,67 @@ async function refreshImage(): Promise<void> {
   }
 }
 
+function findNativePlugins(): string[] {
+  return PLUGIN_DIRS.flatMap((dir) => {
+    try {
+      return fs
+        .readdirSync(dir)
+        .filter((file) => file.endsWith(".so"))
+        .map((file) => path.posix.join(dir, file));
+    } catch {
+      return [];
+    }
+  });
+}
+
+function isTable(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+async function readDotfile(workspacePath: string): Promise<Record<string, unknown>> {
+  const content = await fs.promises
+    .readFile(path.join(workspacePath, DOTFILE), "utf-8")
+    .catch(() => null);
+  if (content === null) {
+    return {};
+  }
+  try {
+    const config = parseToml(content).plugins;
+    return isTable(config) ? config : {};
+  } catch (error) {
+    log.warn(`Ignoring ${DOTFILE}: ${errorMessage(error)}`);
+    return {};
+  }
+}
+
+async function pluginArgs(workspacePath: string): Promise<string[]> {
+  const config = await readDotfile(workspacePath);
+  const args: string[] = [];
+  for (const plugin of plugins) {
+    args.push(`-fplugin=${plugin}`);
+    const name = PLUGIN_NAME.exec(path.posix.basename(plugin))?.[1];
+    const options = name ? config[name] : undefined;
+    if (!isTable(options)) {
+      continue;
+    }
+    for (const [key, value] of Object.entries(options)) {
+      if (typeof value === "string") {
+        args.push(`-fplugin-arg-${name}-${key}=${value}`);
+      }
+    }
+  }
+  return args;
+}
+
 async function setup(forceBuild: boolean): Promise<void> {
+  const nativePlugins = findNativePlugins();
   if (
-    (await succeeds("epiclang", ["--version"])) &&
+    nativePlugins.length > 0 &&
+    (await succeeds(CLANG, ["--version"])) &&
     (await succeeds("banana-check-repo", ["--help"]))
   ) {
     runtime = "native";
+    plugins = nativePlugins;
     log.info("Using the local epiclang install");
     return;
   }
@@ -205,6 +274,7 @@ async function setup(forceBuild: boolean): Promise<void> {
     throw new CheckerUnavailableError(classifyDockerError(message), message);
   }
   runtime = "docker";
+  plugins = [DOCKER_PLUGIN];
 
   const createdAt = await imageCreatedAt();
   if (forceBuild || createdAt === null) {
@@ -387,7 +457,8 @@ export async function checkFiles(
   includeDirs: string[],
 ): Promise<FileErrors> {
   const result = await exec(workspacePath, [
-    "epiclang",
+    CLANG,
+    ...(await pluginArgs(workspacePath)),
     "-fsyntax-only",
     "-fno-caret-diagnostics",
     "-fno-color-diagnostics",
@@ -396,7 +467,7 @@ export async function checkFiles(
     "--",
     ...files,
   ]);
-  assertRan(result, "epiclang");
+  assertRan(result, CLANG);
   const targets = new Set(files);
   return parse(result.stderr, (file) => targets.has(file));
 }
