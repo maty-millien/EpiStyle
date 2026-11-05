@@ -26,9 +26,9 @@ EpiStyle runs Epitech's coding style checker, [epiclang](https://launchpad.net/~
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.png" alt="EpiStyle inline diagnostics showing rule codes and descriptions" width="100%" />
+<img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.gif" alt="Fixing Epitech coding style warnings in VS Code: each save rechecks the file and the warning count drops to zero" width="100%" />
 
-<sub>Inline diagnostics with rule codes and descriptions, shown alongside <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
+<sub>Each save rechecks the file, until the status bar reads Clean. Shown with <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
 
 </div>
 
