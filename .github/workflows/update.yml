@@ -1,0 +1,51 @@
+name: Update
+
+on:
+  schedule:
+    - cron: "23 4 * * 3"
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.UPDATE_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "latest"
+
+      - name: Update dependencies
+        run: bun update --latest --recursive
+
+      - name: Update GitHub Actions
+        run: bunx actions-up --yes --style preserve --min-age 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync VS Code engine
+        run: |
+          version=$(jq -r .version node_modules/@types/vscode/package.json)
+          jq --arg v "^$version" '.engines.vscode = $v' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          bunx vp fmt package.json
+
+      - name: Run checks
+        run: bun run ci
+
+      - name: Check packaging
+        run: bun run package --out /tmp/epistyle.vsix
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "chore: weekly update" && git push)

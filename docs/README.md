@@ -6,7 +6,7 @@
 
 **Real-time Epitech coding style checker for Visual Studio Code**
 
-Catch style violations as you type and ship code that passes the Epitech norm — every time.
+Get Epitech coding style violations in your editor every time you save.
 
 [![Visual Studio Marketplace Version](https://vsmarketplacebadges.dev/version-short/maty-millien.epitech-vs-coding-style.svg?style=flat-square&label=Marketplace&color=007ACC)](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
 [![Visual Studio Marketplace Installs](https://vsmarketplacebadges.dev/installs-short/maty-millien.epitech-vs-coding-style.svg?style=flat-square&label=Installs&color=4c1)](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
@@ -20,7 +20,7 @@ Catch style violations as you type and ship code that passes the Epitech norm �
 
 ## Overview
 
-**EpiStyle** integrates the official Epitech coding style checker directly into Visual Studio Code. It runs automatically in the background and surfaces violations inline, in the Problems panel, and with detailed explanations — so you can fix issues before they ever reach a moulinette.
+EpiStyle runs Epitech's coding style checker, [epiclang](https://launchpad.net/~epitech/+archive/ubuntu/ppa) with the Banana plugin, every time you save a C file. Violations show up inline and in the Problems panel with their rule code and description, so you can fix them before the moulinette sees them.
 
 ## Preview
 
@@ -28,78 +28,63 @@ Catch style violations as you type and ship code that passes the Epitech norm �
 
 <img src="https://raw.githubusercontent.com/maty-millien/EpiStyle/main/assets/demo.png" alt="EpiStyle inline diagnostics showing rule codes and descriptions" width="100%" />
 
-<sub>Inline diagnostics with rule codes and plain-language descriptions, shown alongside <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
+<sub>Inline diagnostics with rule codes and descriptions, shown alongside <a href="https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens">Error Lens</a>.</sub>
 
 </div>
 
 ## Features
 
-- **Real-time analysis** — Style checks run automatically on file save
-- **Fast** — A persistent background container keeps per-save latency in milliseconds
-- **Inline diagnostics** — Warnings appear in the Problems panel and inline
-- **Detailed explanations** — Every violation comes with a clear description
-- **Customizable** — Toggle the checker on or off from settings or the status bar
-- **Gitignore-aware** — Respects ignored files and directories
-- **Zero configuration** — Install, open a C project, and start coding
+- Saving a `.c` or `.h` file checks that file only, in under a second once the checker is running.
+- Opening a project, or creating, deleting or renaming C files, checks the whole workspace, including the repository rules (C-O1 unwanted files, C-O4 file names).
+- Diagnostics point to the exact line and column reported by epiclang.
+- Files matched by `.gitignore` or by the `excludePaths` setting are skipped.
+- The status bar shows the warning count. Click it to turn the checker on or off.
 
-> **Tip:** Pair EpiStyle with [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) for inline highlighting of warnings.
+> **Tip:** Pair EpiStyle with [Error Lens](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) to see each warning at the end of its line.
 
 ## Requirements
 
-| Dependency                                                   | Purpose                                       |
-| ------------------------------------------------------------ | --------------------------------------------- |
-| [Docker](https://www.docker.com/)                            | Runs the official Epitech style checker image |
-| [Visual Studio Code](https://code.visualstudio.com/) `1.74+` | Editor integration                            |
+EpiStyle needs [Visual Studio Code](https://code.visualstudio.com/) `1.145+` and one of these:
 
-Any Docker-compatible runtime works — [Docker Desktop](https://www.docker.com/products/docker-desktop/), [OrbStack](https://orbstack.dev/), [Colima](https://github.com/abiosoft/colima), [Rancher Desktop](https://rancherdesktop.io/), or a native `dockerd` on Linux. Make sure it is running before launching VS Code.
+- **epiclang installed locally.** On Ubuntu, add `ppa:epitech/ppa` and install `epiclang banana-coding-style-checker` (already there on the Epitech Ubuntu image). If `epiclang` and `banana-check-repo` are on your `PATH`, EpiStyle uses them directly.
+- **Docker**, on macOS, Windows or any Linux. Docker Desktop, [OrbStack](https://orbstack.dev/), [Colima](https://github.com/abiosoft/colima), [Rancher Desktop](https://rancherdesktop.io/) or a native `dockerd` all work. Start it before opening VS Code.
+
+Epitech only publishes epiclang as Ubuntu amd64 packages, so with Docker, EpiStyle builds a local image (`epistyle-epiclang`, about 700 MB) from Epitech's PPA the first time it runs. This takes a few minutes, and the image is rebuilt in the background once it's more than a week old. On Apple Silicon the image runs under amd64 emulation, which is why a check takes around half a second.
 
 ## Installation
 
-1. Install **Docker** and make sure the daemon is running
-2. Open VS Code, head to the **Extensions** panel, and search for `EpiStyle` — or grab it directly from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style)
-3. Reload VS Code and open any C project — EpiStyle starts watching automatically
-
-## Usage
-
-Save any `.c`, `.h`, or `Makefile` and EpiStyle takes over:
-
-- Style violations appear in the **Problems** panel
-- Inline diagnostics highlight the offending lines
-- Each entry includes the rule reference and a short explanation
-
-No commands to run, no flags to remember.
+1. Install epiclang or Docker as described above.
+2. Install EpiStyle from the **Extensions** panel or the [Marketplace](https://marketplace.visualstudio.com/items?itemName=maty-millien.epitech-vs-coding-style).
+3. Open a C project. The first check starts on its own.
 
 ## Configuration
 
-| Setting                               | Default      | Description                                                                        |
-| ------------------------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| `epitech-coding-style.enable`         | `true`       | Enable or disable real-time style checks                                           |
-| `epitech-coding-style.persistLogFile` | `false`      | Keep `.vscode/coding-style-reports.log` after each analysis run                    |
-| `epitech-coding-style.excludePaths`   | `["tests/"]` | Gitignore-style patterns to exclude from analysis (applied on top of `.gitignore`) |
+| Setting                             | Default      | Description                                                            |
+| ----------------------------------- | ------------ | ---------------------------------------------------------------------- |
+| `epitech-coding-style.enable`       | `true`       | Enable or disable style checks                                         |
+| `epitech-coding-style.excludePaths` | `["tests/"]` | Gitignore-style patterns to skip, on top of the project's `.gitignore` |
 
-Open VS Code settings (`Cmd`/`Ctrl + ,`) and search for **EpiStyle** to adjust.
+epiclang also reads a `.epiclang` file at the project root to configure its plugins.
 
 ## Commands
 
-Open the command palette (`Cmd`/`Ctrl + Shift + P`) and type **EpiStyle** to access:
+| Command                           | Description                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `EpiStyle: Rebuild Checker Image` | Stops the checker containers and rebuilds the image from the latest PPA packages, then rechecks the workspace |
 
-| Command                                | Description                                                                                                                  |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `EpiStyle: Restart Checker Containers` | Stops the background checker container, re-pulls the latest official image, and starts fresh. Use it after upstream updates. |
+## Known issues
 
-## Known Issues
-
-- Performance may degrade on very large projects
-- Non-standard project structures may require additional configuration
+- Every folder containing a `.h` file is passed to epiclang as an include path. A header that lives elsewhere, or a library missing from the image, stops the check at that `#include`, and EpiStyle reports it as an error on that line.
+- Makefiles are no longer checked, since Banana has no Makefile rules.
 
 ## Contributing
 
-Contributions are welcome. Open an issue or submit a pull request on the [GitHub repository](https://github.com/maty-millien/EpiStyle).
+Open an issue or a pull request on the [GitHub repository](https://github.com/maty-millien/EpiStyle). Run `bun install`, then `bun run ci` to format, lint, typecheck and build.
 
 ## Disclaimer
 
-EpiStyle is an independent, community-maintained open-source project and is **not affiliated with, endorsed by, or sponsored by Epitech**. "Epitech" is a trademark of its respective owner. This extension is a thin wrapper around the publicly available [`Epitech/coding-style-checker`](https://github.com/Epitech/coding-style-checker) Docker image, which is pulled directly from Epitech's official registry on the user's machine — EpiStyle neither bundles nor redistributes it.
+EpiStyle is an independent open-source project and is **not affiliated with, endorsed by, or sponsored by Epitech**. "Epitech" is a trademark of its owner. EpiStyle runs epiclang and Banana as installed on your machine, or in a Docker image built on your machine from Epitech's public PPA. It doesn't bundle or redistribute either tool.
 
 ## License
 
-Distributed under the [MIT License](LICENSE) — © [Maty MILLIEN](https://github.com/maty-millien)
+Distributed under the [MIT License](LICENSE), © [Maty MILLIEN](https://github.com/maty-millien)
