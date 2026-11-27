@@ -114,6 +114,10 @@ function refreshStatus(): void {
     ui.showStatus(0, false, "$(error) Not a C Project");
     return;
   }
+  if (isEnabled() && !checker.isAvailable()) {
+    ui.showStatus(0, false, "$(error) EpiStyle unavailable");
+    return;
+  }
   let total = 0;
   for (const state of files.values()) {
     total += state.style.length + state.repo.length;
@@ -207,7 +211,12 @@ async function drain(): Promise<void> {
       await runWorkspace();
     } else if (next) {
       pendingFiles.delete(next.toString());
-      await runFile(next);
+      if (checker.isAvailable()) {
+        await runFile(next);
+      } else {
+        await checker.init();
+        scheduleWorkspace();
+      }
     }
   } catch (error) {
     log.error(`Check failed: ${errorMessage(error)}`);

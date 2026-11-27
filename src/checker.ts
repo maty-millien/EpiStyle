@@ -81,6 +81,7 @@ interface RunResult {
 let runtime: "native" | "docker" = "docker";
 let plugins: string[] = [];
 let ready: Promise<void> | null = null;
+let available = false;
 const containers = new Map<string, Promise<string>>();
 
 function run(
@@ -266,7 +267,7 @@ async function setup(forceBuild: boolean): Promise<void> {
     await runOk(
       "docker",
       ["version", "--format", "{{.Server.Version}}"],
-      TIMEOUT_MS.probe,
+      TIMEOUT_MS.start,
     );
   } catch (error) {
     const message = errorMessage(error);
@@ -291,11 +292,24 @@ async function setup(forceBuild: boolean): Promise<void> {
 }
 
 function start(forceBuild: boolean): Promise<void> {
-  ready = setup(forceBuild).catch((error) => {
-    ready = null;
-    throw error;
-  });
+  available = false;
+  const starting = setup(forceBuild).then(
+    () => {
+      available = ready === starting;
+    },
+    (error) => {
+      if (ready === starting) {
+        ready = null;
+      }
+      throw error;
+    },
+  );
+  ready = starting;
   return ready;
+}
+
+export function isAvailable(): boolean {
+  return available;
 }
 
 export function init(): Promise<void> {
@@ -366,10 +380,7 @@ export async function stopAll(): Promise<void> {
 }
 
 async function exec(workspacePath: string, command: string[]): Promise<RunResult> {
-  if (!ready) {
-    throw new Error("The style checker is not available");
-  }
-  await ready;
+  await init();
   if (runtime === "native") {
     return run(command[0], command.slice(1), TIMEOUT_MS.check, {
       cwd: workspacePath,
